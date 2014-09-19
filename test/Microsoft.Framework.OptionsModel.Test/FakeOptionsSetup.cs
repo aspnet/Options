@@ -9,6 +9,8 @@ namespace Microsoft.Framework.OptionsModel.Tests
             get { return -1; }
         }
 
+        public string Name { get; set; }
+
         public void Setup(FakeOptions options)
         {
             options.Message += "A";
@@ -22,6 +24,8 @@ namespace Microsoft.Framework.OptionsModel.Tests
             get { return 10; }
         }
 
+        public string Name { get; set; }
+
         public void Setup(FakeOptions options)
         {
             options.Message += "B";
@@ -34,6 +38,8 @@ namespace Microsoft.Framework.OptionsModel.Tests
         {
             get { return 1000; }
         }
+
+        public string Name { get; set; }
 
         public void Setup(FakeOptions options)
         {
