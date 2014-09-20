@@ -5,21 +5,21 @@ using Microsoft.Framework.ConfigurationModel;
 
 namespace Microsoft.Framework.OptionsModel
 {
-    public class ConfigOptionsSetup<TOptions> : IOptionsSetup<TOptions>
+    public class ConfigOptionsSetup<TOptions>(
+        IConfiguration config,
+        int order = OptionsConstants.ConfigurationOrder,
+        string name = null)
+        : IOptionsSetup<TOptions>
     {
-        private readonly IConfiguration _config;
+        private IConfiguration Config { get; } = config;
 
-        public ConfigOptionsSetup(IConfiguration config, int order = OptionsConstants.ConfigurationOrder)
-        {
-            Order = order;
-            _config = config;
-        }
+        public int Order { get; set; } = order;
 
-        public int Order { get; set; }
+        public string Name { get; set; } = name;
 
         public virtual void Setup(TOptions options)
         {
-            OptionsServices.ReadProperties(options, _config);
+            OptionsServices.ReadProperties(options, Config);
         }
     }
 }

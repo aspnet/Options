@@ -24,5 +24,7 @@ namespace Microsoft.Framework.OptionsModel
         }
 
         public virtual int Order { get; set; }
+
+        public virtual string Name { get; set; }
     }
 }

@@ -24,6 +24,7 @@ namespace Microsoft.Framework.DependencyInjection
                     Lifecycle = LifecycleKind.Transient
                 });
             }
+            // TODO: consider throwing if we add no services?
             return services;
         }
 
@@ -46,35 +47,40 @@ namespace Microsoft.Framework.DependencyInjection
                     Lifecycle = LifecycleKind.Singleton
                 });
             }
+            // TODO: consider throwing if we add no services?
             return services;
         }
 
         public static IServiceCollection SetupOptions<TOptions>([NotNull]this IServiceCollection services,
             Action<TOptions> setupAction,
-            int order)
+            string name)
         {
-            services.AddSetup(new OptionsSetup<TOptions>(setupAction) { Order = order });
+            return services.SetupOptions(setupAction, OptionsConstants.DefaultOrder, name);
+        }
+
+        public static IServiceCollection SetupOptions<TOptions>([NotNull]this IServiceCollection services,
+            Action<TOptions> setupAction,
+            int order = OptionsConstants.DefaultOrder,
+            string name = null)
+        {
+            services.AddSetup(new OptionsSetup<TOptions>(setupAction) { Order = order, Name = name });
             return services;
         }
 
         public static IServiceCollection SetupOptions<TOptions>([NotNull]this IServiceCollection services,
-            Action<TOptions> setupAction)
+            [NotNull] IConfiguration config, string name)
         {
-            return services.SetupOptions(setupAction, order: OptionsConstants.DefaultOrder);
-        }
-
-        public static IServiceCollection SetupOptions<TOptions>([NotNull]this IServiceCollection services,
-            IConfiguration config,
-            int order)
-        {
-            services.AddSetup(new ConfigOptionsSetup<TOptions>(config, order));
+            services.AddSetup(new ConfigOptionsSetup<TOptions>(config, OptionsConstants.ConfigurationOrder, name));
             return services;
         }
 
         public static IServiceCollection SetupOptions<TOptions>([NotNull]this IServiceCollection services,
-            IConfiguration config)
+            [NotNull] IConfiguration config,
+            int order = OptionsConstants.ConfigurationOrder, 
+            string name = null)
         {
-            return services.SetupOptions<TOptions>(config, OptionsConstants.ConfigurationOrder);
+            services.AddSetup(new ConfigOptionsSetup<TOptions>(config, order, name));
+            return services;
         }
     }
 }
