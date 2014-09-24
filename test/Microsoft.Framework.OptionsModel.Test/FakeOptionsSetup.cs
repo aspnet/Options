@@ -3,17 +3,36 @@
 
 namespace Microsoft.Framework.OptionsModel.Tests
 {
+    public class FakeOptionsSetupAlways : IOptionsSetup<FakeOptions>
+    {
+        public int Order
+        {
+            get { return -999; }
+        }
+
+        public string OptionsName { get; set; }
+
+        public void Setup(string optionsName, FakeOptions options)
+        {
+            options.Message += "#";
+        }
+    }
+
     public class FakeOptionsSetupA : IOptionsSetup<FakeOptions>
     {
         public int Order {
             get { return -1; }
         }
 
-        public string Name { get; set; }
+        public string OptionsName { get; set; }
 
-        public void Setup(FakeOptions options)
+        public void Setup(string optionsName, FakeOptions options)
         {
-            options.Message += "A";
+            if (optionsName == OptionsName)
+            {
+                options.Message += "A";
+
+            }
         }
     }
 
@@ -24,11 +43,13 @@ namespace Microsoft.Framework.OptionsModel.Tests
             get { return 10; }
         }
 
-        public string Name { get; set; }
+        public string OptionsName { get; set; }
 
-        public void Setup(FakeOptions options)
+        public void Setup(string optionsName, FakeOptions options)
         {
-            options.Message += "B";
+            if (optionsName == OptionsName) {
+                options.Message += "B";
+            }
         }
     }
 
@@ -39,11 +60,14 @@ namespace Microsoft.Framework.OptionsModel.Tests
             get { return 1000; }
         }
 
-        public string Name { get; set; }
+        public string OptionsName { get; set; }
 
-        public void Setup(FakeOptions options)
+        public void Setup(string optionsName, FakeOptions options)
         {
-            options.Message += "C";
+            if (optionsName == OptionsName)
+            {
+                options.Message += "C";
+            }
         }
     }
 }

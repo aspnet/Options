@@ -53,33 +53,33 @@ namespace Microsoft.Framework.DependencyInjection
 
         public static IServiceCollection SetupOptions<TOptions>([NotNull]this IServiceCollection services,
             Action<TOptions> setupAction,
-            string name)
+            string optionsName)
         {
-            return services.SetupOptions(setupAction, OptionsConstants.DefaultOrder, name);
+            return services.SetupOptions(setupAction, OptionsConstants.DefaultOrder, optionsName);
         }
 
         public static IServiceCollection SetupOptions<TOptions>([NotNull]this IServiceCollection services,
             Action<TOptions> setupAction,
             int order = OptionsConstants.DefaultOrder,
-            string name = null)
+            string optionsName = null)
         {
-            services.AddSetup(new OptionsSetup<TOptions>(setupAction) { Order = order, Name = name });
+            services.AddSetup(new OptionsSetup<TOptions>(setupAction) { Order = order, OptionsName = optionsName });
             return services;
         }
 
         public static IServiceCollection SetupOptions<TOptions>([NotNull]this IServiceCollection services,
-            [NotNull] IConfiguration config, string name)
+            [NotNull] IConfiguration config, string optionsName)
         {
-            services.AddSetup(new ConfigOptionsSetup<TOptions>(config, OptionsConstants.ConfigurationOrder, name));
+            services.AddSetup(new ConfigOptionsSetup<TOptions>(config, OptionsConstants.ConfigurationOrder, optionsName));
             return services;
         }
 
         public static IServiceCollection SetupOptions<TOptions>([NotNull]this IServiceCollection services,
             [NotNull] IConfiguration config,
             int order = OptionsConstants.ConfigurationOrder, 
-            string name = null)
+            string optionsName = null)
         {
-            services.AddSetup(new ConfigOptionsSetup<TOptions>(config, order, name));
+            services.AddSetup(new ConfigOptionsSetup<TOptions>(config, order, optionsName));
             return services;
         }
     }

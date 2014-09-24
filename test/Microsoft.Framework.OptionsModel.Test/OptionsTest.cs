@@ -147,11 +147,12 @@ namespace Microsoft.Framework.OptionsModel.Tests
             services.AddSetup(new FakeOptionsSetupB());
             services.AddSetup(typeof(FakeOptionsSetupA));
             services.SetupOptions<FakeOptions>(o => o.Message += "z", 10000);
+            services.AddSetup<FakeOptionsSetupAlways>();
 
-            services.AddSetup(new FakeOptionsSetupB { Name = "2" });
+            services.AddSetup(new FakeOptionsSetupB { OptionsName = "2" });
             services.SetupOptions<FakeOptions>(o => o.Message += "z", 10000, "2");
 
-            services.AddSetup(new FakeOptionsSetupB { Name = "3" });
+            services.AddSetup(new FakeOptionsSetupB { OptionsName = "3" });
             services.SetupOptions<FakeOptions>(config, "3");
             services.SetupOptions<FakeOptions>(o => o.Message += "z", 10000, "3");
 
@@ -159,23 +160,23 @@ namespace Microsoft.Framework.OptionsModel.Tests
             Assert.NotNull(service);
             var options = service.Options;
             Assert.NotNull(options);
-            Assert.Equal("!aABCz", options.Message);
+            Assert.Equal("!#aABCz", options.Message);
 
             var options2 = service.GetNamedOptions("2");
             Assert.NotNull(options2);
-            Assert.Equal("Bz", options2.Message);
+            Assert.Equal("#Bz", options2.Message);
 
             var options3 = service.GetNamedOptions("3");
             Assert.NotNull(options3);
-            Assert.Equal("!Bz", options3.Message);
+            Assert.Equal("!#Bz", options3.Message);
 
         }
 
         [Fact]
-        public void NamedSetupAreNotCaseSensitive()
+        public void SetupOptionsNameIsNotCaseSensitive()
         {
             var services = new ServiceCollection { OptionsServices.GetDefaultServices() };
-            services.AddSetup(new FakeOptionsSetupB { Name = "abc" });
+            services.SetupOptions<FakeOptions>(o => o.Message += "B", -100, "abc");
 
             var service = services.BuildServiceProvider().GetService<IOptionsAccessor<FakeOptions>>();
 
@@ -186,7 +187,6 @@ namespace Microsoft.Framework.OptionsModel.Tests
             var options3 = service.GetNamedOptions("aBc");
             Assert.NotNull(options3);
             Assert.Equal("B", options3.Message);
-
         }
 
     }

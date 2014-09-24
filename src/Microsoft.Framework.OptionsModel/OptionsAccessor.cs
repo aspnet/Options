@@ -35,20 +35,19 @@ namespace Microsoft.Framework.OptionsModel
             return _namedOptions[name];
         }
 
-        public virtual TOptions SetupOptions(string name = null)
+        public virtual TOptions SetupOptions(string optionsName = null)
         {
             if (_setups == null)
             {
                 return new TOptions();
             }
             return _setups
-                .Where(s => string.Equals(s.Name, name, StringComparison.OrdinalIgnoreCase))
                 .OrderBy(setup => setup.Order)
                 .Aggregate(
                     new TOptions(),
                     (options, setup) =>
                     {
-                        setup.Setup(options);
+                        setup.Setup(optionsName, options);
                         return options;
                     });
         }
