@@ -9,7 +9,7 @@ namespace Microsoft.Framework.OptionsModel
     public class ConfigOptionsSetup<TOptions>(
         IConfiguration config,
         int order = OptionsConstants.ConfigurationOrder,
-        string optionsName = null)
+        string optionsName = "")
         : IOptionsSetup<TOptions>
     {
         private IConfiguration Config { get; } = config;

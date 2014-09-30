@@ -9,9 +9,7 @@ namespace Microsoft.Framework.OptionsModel
 {
     public class OptionsAccessor<TOptions> : IOptionsAccessor<TOptions> where TOptions : class,new()
     {
-        private object _lock = new object();
         private object _mapLock = new object();
-        private TOptions _options;
         private Dictionary<string, TOptions> _namedOptions = new Dictionary<string, TOptions>(StringComparer.OrdinalIgnoreCase);
         private IEnumerable<IOptionsSetup<TOptions>> _setups;
 
@@ -35,38 +33,24 @@ namespace Microsoft.Framework.OptionsModel
             return _namedOptions[name];
         }
 
-        public virtual TOptions SetupOptions(string optionsName = null)
+        public virtual TOptions SetupOptions(string optionsName = "")
         {
-            if (_setups == null)
-            {
-                return new TOptions();
-            }
-            return _setups
-                .OrderBy(setup => setup.Order)
-                .Aggregate(
-                    new TOptions(),
-                    (options, setup) =>
-                    {
-                        setup.Setup(optionsName, options);
-                        return options;
-                    });
+            return _setups == null 
+                ? new TOptions() 
+                : _setups.OrderBy(setup => setup.Order)
+                         .Aggregate(new TOptions(),
+                                    (options, setup) =>
+                                    {
+                                        setup.Setup(optionsName, options);
+                                        return options;
+                                    });
         }
 
         public virtual TOptions Options
         {
             get
             {
-                if (_options == null)
-                {
-                    lock (_lock)
-                    {
-                        if (_options == null)
-                        {
-                            _options = SetupOptions();
-                        }
-                    }
-                }
-                return _options;
+                return GetNamedOptions("");
             }
         }
     }

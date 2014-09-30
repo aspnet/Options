@@ -5,18 +5,20 @@ using System;
 
 namespace Microsoft.Framework.OptionsModel
 {
-    public class OptionsSetup<TOptions>([NotNull]Action<TOptions> setupAction) : IOptionsSetup<TOptions>
+    public class OptionsSetup<TOptions> : IOptionsSetup<TOptions>
     {
+        public OptionsSetup([NotNull]Action<TOptions> setupAction)
         {
             if (setupAction == null)
             {
                 throw new ArgumentNullException("setupAction");
             }
+            SetupAction = setupAction;
         }
 
-        public virtual Action<TOptions> SetupAction { get; } = setupAction;
+        public virtual Action<TOptions> SetupAction { get; private set; }
 
-        public virtual string OptionsName { get; set; } 
+        public virtual string OptionsName { get; set; } = "";
 
         public virtual int Order { get; set; } = OptionsConstants.DefaultOrder;
 

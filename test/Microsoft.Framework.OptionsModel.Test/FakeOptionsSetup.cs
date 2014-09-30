@@ -10,7 +10,7 @@ namespace Microsoft.Framework.OptionsModel.Tests
             get { return -999; }
         }
 
-        public string OptionsName { get; set; }
+        public string OptionsName { get; set; } = "";
 
         public void Setup(string optionsName, FakeOptions options)
         {
@@ -24,7 +24,7 @@ namespace Microsoft.Framework.OptionsModel.Tests
             get { return -1; }
         }
 
-        public string OptionsName { get; set; }
+        public string OptionsName { get; set; } = "";
 
         public void Setup(string optionsName, FakeOptions options)
         {
@@ -43,7 +43,7 @@ namespace Microsoft.Framework.OptionsModel.Tests
             get { return 10; }
         }
 
-        public string OptionsName { get; set; }
+        public string OptionsName { get; set; } = "";
 
         public void Setup(string optionsName, FakeOptions options)
         {
@@ -60,7 +60,7 @@ namespace Microsoft.Framework.OptionsModel.Tests
             get { return 1000; }
         }
 
-        public string OptionsName { get; set; }
+        public string OptionsName { get; set; } = "";
 
         public void Setup(string optionsName, FakeOptions options)
         {

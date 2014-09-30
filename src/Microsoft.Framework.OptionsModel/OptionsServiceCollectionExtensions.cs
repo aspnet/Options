@@ -61,7 +61,7 @@ namespace Microsoft.Framework.DependencyInjection
         public static IServiceCollection SetupOptions<TOptions>([NotNull]this IServiceCollection services,
             Action<TOptions> setupAction,
             int order = OptionsConstants.DefaultOrder,
-            string optionsName = null)
+            string optionsName = "")
         {
             services.AddSetup(new OptionsSetup<TOptions>(setupAction) { Order = order, OptionsName = optionsName });
             return services;
@@ -77,7 +77,7 @@ namespace Microsoft.Framework.DependencyInjection
         public static IServiceCollection SetupOptions<TOptions>([NotNull]this IServiceCollection services,
             [NotNull] IConfiguration config,
             int order = OptionsConstants.ConfigurationOrder, 
-            string optionsName = null)
+            string optionsName = "")
         {
             services.AddSetup(new ConfigOptionsSetup<TOptions>(config, order, optionsName));
             return services;
