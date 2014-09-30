@@ -6,17 +6,23 @@ using System;
 
 namespace Microsoft.Framework.OptionsModel
 {
-    public class ConfigOptionsSetup<TOptions>(
-        IConfiguration config,
-        int order = OptionsConstants.ConfigurationOrder,
-        string optionsName = "")
-        : IOptionsSetup<TOptions>
+    public class ConfigOptionsSetup<TOptions> : IOptionsSetup<TOptions>
     {
-        private IConfiguration Config { get; } = config;
+        public ConfigOptionsSetup(IConfiguration config,
+            int order = OptionsConstants.ConfigurationOrder,
+            string optionsName = "")
+        {
+            Config = config;
+            Order = order;
+            OptionsName = optionsName;
+        }
 
-        public int Order { get; set; } = order;
 
-        public string OptionsName { get; set; } = optionsName;
+        private IConfiguration Config { get; set; }
+
+        public int Order { get; set; }
+
+        public string OptionsName { get; set; }
 
         public virtual void Setup(string optionsName, TOptions options)
         {
