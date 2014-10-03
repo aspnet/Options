@@ -7,27 +7,26 @@ namespace Microsoft.Framework.OptionsModel
 {
     public class OptionsSetup<TOptions> : IOptionsSetup<TOptions>
     {
-        public OptionsSetup([NotNull]Action<TOptions> setupAction)
+        public OptionsSetup([NotNull]OptionsAction<TOptions> optionsAction)
         {
-            if (setupAction == null)
+            if (optionsAction == null)
             {
-                throw new ArgumentNullException("setupAction");
+                throw new ArgumentNullException(nameof(optionsAction));
             }
-            SetupAction = setupAction;
+            OptionsAction = optionsAction;
         }
 
-        public virtual Action<TOptions> SetupAction { get; private set; }
+        public OptionsAction<TOptions> OptionsAction { get; private set; }
 
-        public virtual string OptionsName { get; set; } = "";
-
-        public virtual int Order { get; set; } = OptionsConstants.DefaultOrder;
+        public virtual int Order { get { return OptionsAction.Order; } }
 
         public virtual void Setup(string optionsName, [NotNull]TOptions options)
         {
-            // Apply setup action only if the name matches (null name is the default setup)
-            if (string.Equals(optionsName, OptionsName, StringComparison.OrdinalIgnoreCase))
+            // Apply any unnamed setup actions or if the options name matches
+            if (string.IsNullOrEmpty(OptionsAction.Name) || 
+                string.Equals(optionsName, OptionsAction.Name, StringComparison.OrdinalIgnoreCase))
             {
-                SetupAction(options);
+                OptionsAction.Invoke(options);
             }
         }
     }
