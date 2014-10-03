@@ -56,7 +56,7 @@ namespace Microsoft.Framework.DependencyInjection
         public static IServiceCollection SetupOptions<TOptions>([NotNull]this IServiceCollection services,
             Action<TOptions> setupAction)
         {
-            return services.ConfigureOptions<TOptions>(setupAction);
+            return services.ConfigureOptions(setupAction);
         }
 
         public static IServiceCollection ConfigureOptions<TOptions>([NotNull]this IServiceCollection services,
