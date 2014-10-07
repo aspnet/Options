@@ -183,6 +183,21 @@ namespace Microsoft.Framework.OptionsModel.Tests
         }
 
         [Fact]
+        public void ConfigureOptionsAreStoredByOrderAndThenName()
+        {
+            var services = new ServiceCollection { OptionsServices.GetDefaultServices() };
+            services.ConfigureOptions<FakeOptions>(o => o.Message += "A", -1, "");
+            services.ConfigureOptions<FakeOptions>(o => o.Message += "C", 0, "me");
+            services.ConfigureOptions<FakeOptions>(o => o.Message += "B", 0, null);
+            services.ConfigureOptions<FakeOptions>(o => o.Message += "D", 1, null);
+            var service = services.BuildServiceProvider().GetService<IOptionsAccessor<FakeOptions>>();
+
+            var options = service.GetNamedOptions("me");
+            Assert.Equal("ABCD", options.Message);
+        }
+
+
+        [Fact]
         public void SetupTargetOptionsNameIsNotCaseSensitive()
         {
             var services = new ServiceCollection { OptionsServices.GetDefaultServices() };

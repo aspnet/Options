@@ -38,6 +38,7 @@ namespace Microsoft.Framework.OptionsModel
             return _setups == null 
                 ? new TOptions() 
                 : _setups.OrderBy(setup => setup.Order)
+                         .ThenBy(setup => setup.TargetOptionsName)
                          .Aggregate(new TOptions(),
                                     (options, setup) =>
                                     {
