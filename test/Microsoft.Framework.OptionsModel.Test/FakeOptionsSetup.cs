@@ -3,22 +3,7 @@
 
 namespace Microsoft.Framework.OptionsModel.Tests
 {
-    public class FakeOptionsSetupAlways : IConfigureOptions<FakeOptions>
-    {
-        public int Order
-        {
-            get { return -999; }
-        }
-
-        public string TargetOptionsName { get; set; } = "";
-
-        public void Configure(string optionsName, FakeOptions options)
-        {
-            options.Message += "#";
-        }
-    }
-
-    public class FakeOptionsSetupA : ConfigureOptions<FakeOptions>
+    public class FakeOptionsSetupA : OptionsAction<FakeOptions>
     {
         public FakeOptionsSetupA() : base(o => o.Message += "A")
         {
@@ -26,7 +11,7 @@ namespace Microsoft.Framework.OptionsModel.Tests
         }
     }
 
-    public class FakeOptionsSetupB : ConfigureOptions<FakeOptions>
+    public class FakeOptionsSetupB : OptionsAction<FakeOptions>
     {
         public FakeOptionsSetupB() : base(o => o.Message += "B")
         {
@@ -34,7 +19,7 @@ namespace Microsoft.Framework.OptionsModel.Tests
         }
     }
 
-    public class FakeOptionsSetupC : ConfigureOptions<FakeOptions>
+    public class FakeOptionsSetupC : OptionsAction<FakeOptions>
     {
         public FakeOptionsSetupC() : base(o => o.Message += "C")
         {

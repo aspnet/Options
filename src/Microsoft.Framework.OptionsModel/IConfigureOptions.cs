@@ -3,10 +3,10 @@
 
 namespace Microsoft.Framework.OptionsModel
 {
-    public interface IConfigureOptions<in TOptions>
+    public interface IOptionsAction<in TOptions>
     {
         int Order { get; }
-        string TargetOptionsName { get; }
-        void Configure(string optionsName, TOptions options);
+        string Name { get; }
+        void Invoke(TOptions options);
     }
 }

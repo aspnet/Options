@@ -5,9 +5,10 @@ using Microsoft.Framework.ConfigurationModel;
 
 namespace Microsoft.Framework.OptionsModel
 {
-    public class FromConfigurationOptions<TOptions> : ConfigureOptions<TOptions>
+
+    public class ConfigurationAction<TOptions> : OptionsAction<TOptions>
     {
-        public FromConfigurationOptions([NotNull] IConfiguration config) 
+        public ConfigurationAction([NotNull] IConfiguration config) 
             : base(options => OptionsServices.ReadProperties(options, config))
         {
         }

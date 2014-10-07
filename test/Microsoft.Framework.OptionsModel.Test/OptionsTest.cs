@@ -119,9 +119,9 @@ namespace Microsoft.Framework.OptionsModel.Tests
             services.ConfigureOptions<FakeOptions>(o => o.Message += "Igetstomped", -100000);
             services.ConfigureOptions<FakeOptions>(config);
             services.ConfigureOptions<FakeOptions>(o => o.Message += "a", -100);
-            services.AddConfigureOptions<FakeOptionsSetupC>();
-            services.AddConfigureOptions(new FakeOptionsSetupB());
-            services.AddConfigureOptions(typeof(FakeOptionsSetupA));
+            services.AddOptionsAction<FakeOptionsSetupC>();
+            services.AddOptionsAction(new FakeOptionsSetupB());
+            services.AddOptionsAction(typeof(FakeOptionsSetupA));
             services.ConfigureOptions<FakeOptions>(o => o.Message += "z", 10000);
 
             var service = services.BuildServiceProvider().GetService<IOptionsAccessor<FakeOptions>>();
@@ -159,10 +159,10 @@ namespace Microsoft.Framework.OptionsModel.Tests
             };
             var config = new Configuration { new MemoryConfigurationSource(dic) };
 
-            services.AddConfigureOptions(new FakeOptionsSetupB { TargetOptionsName = "2" });
+            services.AddOptionsAction(new FakeOptionsSetupB { Name = "2" });
             services.ConfigureOptions<FakeOptions>(o => o.Message += "Z", 10000, "2");
 
-            services.AddConfigureOptions(new FakeOptionsSetupB { TargetOptionsName = "3" });
+            services.AddOptionsAction(new FakeOptionsSetupB { Name = "3" });
             services.ConfigureOptions<FakeOptions>(config, "3");
             services.ConfigureOptions<FakeOptions>(o => o.Message += "z", 10000, "3");
 

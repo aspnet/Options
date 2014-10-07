@@ -11,11 +11,10 @@ namespace Microsoft.Framework.DependencyInjection
 {
     public static class OptionsServiceCollectionExtensions
     {
-
-        public static IServiceCollection AddConfigureOptions([NotNull]this IServiceCollection services, Type configureType)
+        public static IServiceCollection AddOptionsAction([NotNull]this IServiceCollection services, Type configureType)
         {
             var serviceTypes = configureType.GetTypeInfo().ImplementedInterfaces
-                .Where(t => t.GetTypeInfo().IsGenericType && t.GetGenericTypeDefinition() == typeof(IConfigureOptions<>));
+                .Where(t => t.GetTypeInfo().IsGenericType && t.GetGenericTypeDefinition() == typeof(IOptionsAction<>));
             foreach (var serviceType in serviceTypes)
             {
                 services.Add(new ServiceDescriptor
@@ -29,16 +28,16 @@ namespace Microsoft.Framework.DependencyInjection
             return services;
         }
 
-        public static IServiceCollection AddConfigureOptions<TSetup>([NotNull]this IServiceCollection services)
+        public static IServiceCollection AddOptionsAction<TSetup>([NotNull]this IServiceCollection services)
         {
-            return services.AddConfigureOptions(typeof(TSetup));
+            return services.AddOptionsAction(typeof(TSetup));
         }
 
-        public static IServiceCollection AddConfigureOptions([NotNull]this IServiceCollection services, [NotNull]object configureInstance)
+        public static IServiceCollection AddOptionsAction([NotNull]this IServiceCollection services, [NotNull]object configureInstance)
         {
             var setupType = configureInstance.GetType();
             var serviceTypes = setupType.GetTypeInfo().ImplementedInterfaces
-                .Where(t => t.GetTypeInfo().IsGenericType && t.GetGenericTypeDefinition() == typeof(IConfigureOptions<>));
+                .Where(t => t.GetTypeInfo().IsGenericType && t.GetGenericTypeDefinition() == typeof(IOptionsAction<>));
             foreach (var serviceType in serviceTypes)
             {
                 services.Add(new ServiceDescriptor
@@ -71,12 +70,12 @@ namespace Microsoft.Framework.DependencyInjection
             int order = OptionsConstants.DefaultOrder,
             string optionsName = "")
         {
-            services.AddConfigureOptions(new ConfigureOptions<TOptions>(setupAction)
-                {
-                    TargetOptionsName = optionsName,
-                    Order = order
-                });
-            return services;
+            services.AddOptionsAction(new OptionsAction<TOptions>(setupAction)
+            {
+                Name = optionsName,
+                Order = order
+            });
+        return services;
         }
 
         public static IServiceCollection ConfigureOptions<TOptions>([NotNull]this IServiceCollection services,
@@ -90,9 +89,9 @@ namespace Microsoft.Framework.DependencyInjection
             int order = OptionsConstants.ConfigurationOrder, 
             string optionsName = "")
         {
-            services.AddConfigureOptions(new FromConfigurationOptions<TOptions>(config)
+            services.AddOptionsAction(new ConfigurationAction<TOptions>(config)
             {
-                TargetOptionsName = optionsName,
+                Name = optionsName,
                 Order = order
             });
             return services;
