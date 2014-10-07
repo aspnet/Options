@@ -119,9 +119,9 @@ namespace Microsoft.Framework.OptionsModel.Tests
             services.ConfigureOptions<FakeOptions>(o => o.Message += "Igetstomped", -100000);
             services.ConfigureOptions<FakeOptions>(config);
             services.ConfigureOptions<FakeOptions>(o => o.Message += "a", -100);
-            services.AddSetup<FakeOptionsSetupC>();
-            services.AddSetup(new FakeOptionsSetupB());
-            services.AddSetup(typeof(FakeOptionsSetupA));
+            services.AddConfigureOptions<FakeOptionsSetupC>();
+            services.AddConfigureOptions(new FakeOptionsSetupB());
+            services.AddConfigureOptions(typeof(FakeOptionsSetupA));
             services.ConfigureOptions<FakeOptions>(o => o.Message += "z", 10000);
 
             var service = services.BuildServiceProvider().GetService<IOptionsAccessor<FakeOptions>>();
@@ -134,17 +134,17 @@ namespace Microsoft.Framework.OptionsModel.Tests
         [Fact]
         public void NullNamesAreAlwaysApplied()
         {
-            const string optionsName = "Name";
+            const string TargetOptionsName = "Name";
             var services = new ServiceCollection { OptionsServices.GetDefaultServices() };
             services.ConfigureOptions<FakeOptions>(o => o.Message += "a");
-            services.ConfigureOptions<FakeOptions>(o => o.Message += "N", optionsName);
+            services.ConfigureOptions<FakeOptions>(o => o.Message += "N", TargetOptionsName);
 
             var service = services.BuildServiceProvider().GetService<IOptionsAccessor<FakeOptions>>();
             Assert.NotNull(service);
             var options = service.Options;
             Assert.NotNull(options);
             Assert.Equal("a", options.Message);
-            var namedOption = service.GetNamedOptions(optionsName);
+            var namedOption = service.GetNamedOptions(TargetOptionsName);
             Assert.NotNull(namedOption);
             Assert.Equal("aN", namedOption.Message);
         }
@@ -159,10 +159,10 @@ namespace Microsoft.Framework.OptionsModel.Tests
             };
             var config = new Configuration { new MemoryConfigurationSource(dic) };
 
-            services.AddSetup(new FakeOptionsSetupB { OptionsName = "2" });
+            services.AddConfigureOptions(new FakeOptionsSetupB { TargetOptionsName = "2" });
             services.ConfigureOptions<FakeOptions>(o => o.Message += "Z", 10000, "2");
 
-            services.AddSetup(new FakeOptionsSetupB { OptionsName = "3" });
+            services.AddConfigureOptions(new FakeOptionsSetupB { TargetOptionsName = "3" });
             services.ConfigureOptions<FakeOptions>(config, "3");
             services.ConfigureOptions<FakeOptions>(o => o.Message += "z", 10000, "3");
 
@@ -183,7 +183,7 @@ namespace Microsoft.Framework.OptionsModel.Tests
         }
 
         [Fact]
-        public void SetupOptionsNameIsNotCaseSensitive()
+        public void SetupTargetOptionsNameIsNotCaseSensitive()
         {
             var services = new ServiceCollection { OptionsServices.GetDefaultServices() };
             services.ConfigureOptions<FakeOptions>(o => o.Message += "B", -100, "abc");

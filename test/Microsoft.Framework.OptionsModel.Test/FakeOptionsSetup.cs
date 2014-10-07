@@ -3,71 +3,42 @@
 
 namespace Microsoft.Framework.OptionsModel.Tests
 {
-    public class FakeOptionsSetupAlways : IOptionsSetup<FakeOptions>
+    public class FakeOptionsSetupAlways : IConfigureOptions<FakeOptions>
     {
         public int Order
         {
             get { return -999; }
         }
 
-        public string OptionsName { get; set; } = "";
+        public string TargetOptionsName { get; set; } = "";
 
-        public void Setup(string optionsName, FakeOptions options)
+        public void Configure(string optionsName, FakeOptions options)
         {
             options.Message += "#";
         }
     }
 
-    public class FakeOptionsSetupA : IOptionsSetup<FakeOptions>
+    public class FakeOptionsSetupA : ConfigureOptions<FakeOptions>
     {
-        public int Order {
-            get { return -1; }
-        }
-
-        public string OptionsName { get; set; } = "";
-
-        public void Setup(string optionsName, FakeOptions options)
+        public FakeOptionsSetupA() : base(o => o.Message += "A")
         {
-            if (optionsName == OptionsName)
-            {
-                options.Message += "A";
-
-            }
+            Order = -1;
         }
     }
 
-    public class FakeOptionsSetupB : IOptionsSetup<FakeOptions>
+    public class FakeOptionsSetupB : ConfigureOptions<FakeOptions>
     {
-        public int Order
+        public FakeOptionsSetupB() : base(o => o.Message += "B")
         {
-            get { return 10; }
-        }
-
-        public string OptionsName { get; set; } = "";
-
-        public void Setup(string optionsName, FakeOptions options)
-        {
-            if (optionsName == OptionsName) {
-                options.Message += "B";
-            }
+            Order = 10;
         }
     }
 
-    public class FakeOptionsSetupC : IOptionsSetup<FakeOptions>
+    public class FakeOptionsSetupC : ConfigureOptions<FakeOptions>
     {
-        public int Order
+        public FakeOptionsSetupC() : base(o => o.Message += "C")
         {
-            get { return 1000; }
-        }
-
-        public string OptionsName { get; set; } = "";
-
-        public void Setup(string optionsName, FakeOptions options)
-        {
-            if (optionsName == OptionsName)
-            {
-                options.Message += "C";
-            }
+            Order = 1000;
         }
     }
 }

@@ -11,9 +11,9 @@ namespace Microsoft.Framework.OptionsModel
     {
         private object _mapLock = new object();
         private Dictionary<string, TOptions> _namedOptions = new Dictionary<string, TOptions>(StringComparer.OrdinalIgnoreCase);
-        private IEnumerable<IOptionsSetup<TOptions>> _setups;
+        private IEnumerable<IConfigureOptions<TOptions>> _setups;
 
-        public OptionsAccessor(IEnumerable<IOptionsSetup<TOptions>> setups)
+        public OptionsAccessor(IEnumerable<IConfigureOptions<TOptions>> setups)
         {
             _setups = setups;
         }
@@ -26,14 +26,14 @@ namespace Microsoft.Framework.OptionsModel
                 {
                     if (!_namedOptions.ContainsKey(name))
                     {
-                        _namedOptions[name] = SetupOptions(name);
+                        _namedOptions[name] = Configure(name);
                     }
                 }
             }
             return _namedOptions[name];
         }
 
-        public virtual TOptions SetupOptions(string optionsName = "")
+        public virtual TOptions Configure(string optionsName = "")
         {
             return _setups == null 
                 ? new TOptions() 
@@ -41,7 +41,7 @@ namespace Microsoft.Framework.OptionsModel
                          .Aggregate(new TOptions(),
                                     (options, setup) =>
                                     {
-                                        setup.Setup(optionsName, options);
+                                        setup.Configure(optionsName, options);
                                         return options;
                                     });
         }
