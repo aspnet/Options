@@ -7,13 +7,13 @@ using System.Linq;
 
 namespace Microsoft.Framework.OptionsModel
 {
-    public class OptionsAccessor<TOptions> : IOptionsAccessor<TOptions> where TOptions : class,new()
+    public class OptionsManager<TOptions> : IOptions<TOptions> where TOptions : class,new()
     {
         private object _mapLock = new object();
         private Dictionary<string, TOptions> _namedOptions = new Dictionary<string, TOptions>(StringComparer.OrdinalIgnoreCase);
-        private IEnumerable<IOptionsAction<TOptions>> _setups;
+        private IEnumerable<IConfigureOptions<TOptions>> _setups;
 
-        public OptionsAccessor(IEnumerable<IOptionsAction<TOptions>> setups)
+        public OptionsManager(IEnumerable<IConfigureOptions<TOptions>> setups)
         {
             _setups = setups;
         }
@@ -44,7 +44,7 @@ namespace Microsoft.Framework.OptionsModel
                          .Aggregate(new TOptions(),
                                     (options, setup) =>
                                     {
-                                        setup.Invoke(options);
+                                        setup.Configure(options);
                                         return options;
                                     });
         }

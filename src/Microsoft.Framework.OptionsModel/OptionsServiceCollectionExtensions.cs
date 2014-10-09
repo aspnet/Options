@@ -11,7 +11,7 @@ namespace Microsoft.Framework.DependencyInjection
 {
     public static class OptionsServiceCollectionExtensions
     {
-        public static IServiceCollection AddOptionsAction([NotNull]this IServiceCollection services, Type configureType)
+        public static IServiceCollection ConfigureOptions([NotNull]this IServiceCollection services, Type configureType)
         {
             var serviceTypes = configureType.GetTypeInfo().ImplementedInterfaces
                 .Where(t => t.GetTypeInfo().IsGenericType && t.GetGenericTypeDefinition() == typeof(IOptionsAction<>));
@@ -23,12 +23,12 @@ namespace Microsoft.Framework.DependencyInjection
             return services;
         }
 
-        public static IServiceCollection AddOptionsAction<TSetup>([NotNull]this IServiceCollection services)
+        public static IServiceCollection ConfigureOptions<TSetup>([NotNull]this IServiceCollection services)
         {
-            return services.AddOptionsAction(typeof(TSetup));
+            return services.ConfigureOptions(typeof(TSetup));
         }
 
-        public static IServiceCollection AddOptionsAction([NotNull]this IServiceCollection services, [NotNull]object configureInstance)
+        public static IServiceCollection ConfigureOptions([NotNull]this IServiceCollection services, [NotNull]object configureInstance)
         {
             var setupType = configureInstance.GetType();
             var serviceTypes = setupType.GetTypeInfo().ImplementedInterfaces
@@ -41,31 +41,24 @@ namespace Microsoft.Framework.DependencyInjection
             return services;
         }
 
-        [Obsolete("Use ConfigureOptions instead")]
-        public static IServiceCollection SetupOptions<TOptions>([NotNull]this IServiceCollection services,
-            Action<TOptions> setupAction)
-        {
-            return services.ConfigureOptions(setupAction);
-        }
-
-        public static IServiceCollection ConfigureOptions<TOptions>([NotNull]this IServiceCollection services,
+        public static IServiceCollection Configure<TOptions>([NotNull]this IServiceCollection services,
             Action<TOptions> setupAction,
             string optionsName)
         {
-            return services.ConfigureOptions(setupAction, OptionsConstants.DefaultOrder, optionsName);
+            return services.Configure(setupAction, OptionsConstants.DefaultOrder, optionsName);
         }
 
-        public static IServiceCollection ConfigureOptions<TOptions>([NotNull]this IServiceCollection services,
+        public static IServiceCollection Configure<TOptions>([NotNull]this IServiceCollection services,
             [NotNull] Action<TOptions> setupAction,
             int order = OptionsConstants.DefaultOrder,
             string optionsName = "")
         {
-            services.AddOptionsAction(new OptionsAction<TOptions>(setupAction)
+            services.ConfigureOptions(new ConfigureOptions<TOptions>(setupAction)
             {
                 Name = optionsName,
                 Order = order
             });
-        return services;
+            return services;
         }
 
         public static IServiceCollection ConfigureOptions<TOptions>([NotNull]this IServiceCollection services,
@@ -79,7 +72,7 @@ namespace Microsoft.Framework.DependencyInjection
             int order = OptionsConstants.ConfigurationOrder, 
             string optionsName = "")
         {
-            services.AddOptionsAction(new ConfigurationAction<TOptions>(config)
+            services.ConfigureOptions(new ConfigureFromConfigurationOptions<TOptions>(config)
             {
                 Name = optionsName,
                 Order = order

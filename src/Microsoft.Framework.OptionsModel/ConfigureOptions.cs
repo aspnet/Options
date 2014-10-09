@@ -5,9 +5,9 @@ using System;
 
 namespace Microsoft.Framework.OptionsModel
 {
-    public class OptionsAction<TOptions> : IOptionsAction<TOptions>
+    public class ConfigureOptions<TOptions> : IConfigureOptions<TOptions>
     {
-        public OptionsAction([NotNull]Action<TOptions> action)
+        public ConfigureOptions([NotNull]Action<TOptions> action)
         {
             Action = action;
         }
@@ -17,7 +17,7 @@ namespace Microsoft.Framework.OptionsModel
         public string Name { get; set; } = "";
         public virtual int Order { get; set; } = OptionsConstants.DefaultOrder;
 
-        public virtual void Invoke([NotNull]TOptions options)
+        public virtual void Configure([NotNull]TOptions options)
         {
             Action.Invoke(options);
         }

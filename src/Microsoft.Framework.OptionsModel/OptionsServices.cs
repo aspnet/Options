@@ -3,7 +3,6 @@
 
 using System;
 using System.Collections.Generic;
-using System.Reflection;
 using Microsoft.Framework.ConfigurationModel;
 using Microsoft.Framework.DependencyInjection;
 
@@ -20,7 +19,7 @@ namespace Microsoft.Framework.OptionsModel
         {
             var describe = new ServiceDescriber(configuration);
 
-            yield return describe.Singleton(typeof(IOptionsAccessor<>), typeof(OptionsAccessor<>));
+            yield return describe.Singleton(typeof(IOptions<>), typeof(OptionsManager<>));
         }
 
         public static void ReadProperties(object obj, IConfiguration config)
