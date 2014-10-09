@@ -14,7 +14,7 @@ namespace Microsoft.Framework.DependencyInjection
         public static IServiceCollection ConfigureOptions([NotNull]this IServiceCollection services, Type configureType)
         {
             var serviceTypes = configureType.GetTypeInfo().ImplementedInterfaces
-                .Where(t => t.GetTypeInfo().IsGenericType && t.GetGenericTypeDefinition() == typeof(IOptionsAction<>));
+                .Where(t => t.GetTypeInfo().IsGenericType && t.GetGenericTypeDefinition() == typeof(IConfigureOptions<>));
             foreach (var serviceType in serviceTypes)
             {
                 services.AddTransient(serviceType, configureType);
@@ -32,7 +32,7 @@ namespace Microsoft.Framework.DependencyInjection
         {
             var setupType = configureInstance.GetType();
             var serviceTypes = setupType.GetTypeInfo().ImplementedInterfaces
-                .Where(t => t.GetTypeInfo().IsGenericType && t.GetGenericTypeDefinition() == typeof(IOptionsAction<>));
+                .Where(t => t.GetTypeInfo().IsGenericType && t.GetGenericTypeDefinition() == typeof(IConfigureOptions<>));
             foreach (var serviceType in serviceTypes)
             {
                 services.AddInstance(serviceType, configureInstance);
