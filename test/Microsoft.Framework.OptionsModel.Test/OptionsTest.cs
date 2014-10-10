@@ -182,20 +182,19 @@ namespace Microsoft.Framework.OptionsModel.Tests
 
         }
 
-        [Fact]
-        public void ConfigureOptionsAreStoredByOrderAndThenName()
-        {
-            var services = new ServiceCollection { OptionsServices.GetDefaultServices() };
-            services.Configure<FakeOptions>(o => o.Message += "A", -1, "");
-            services.Configure<FakeOptions>(o => o.Message += "C", 0, "me");
-            services.Configure<FakeOptions>(o => o.Message += "B", 0, null);
-            services.Configure<FakeOptions>(o => o.Message += "D", 1, null);
-            var service = services.BuildServiceProvider().GetService<IOptions<FakeOptions>>();
+        //[Fact(Skip="We no longer order by name for now")]
+        //public void ConfigureOptionsAreStoredByOrderAndThenName()
+        //{
+        //    var services = new ServiceCollection { OptionsServices.GetDefaultServices() };
+        //    services.Configure<FakeOptions>(o => o.Message += "A", -1, "");
+        //    services.Configure<FakeOptions>(o => o.Message += "C", 0, "me");
+        //    services.Configure<FakeOptions>(o => o.Message += "B", 0, null);
+        //    services.Configure<FakeOptions>(o => o.Message += "D", 1, null);
+        //    var service = services.BuildServiceProvider().GetService<IOptions<FakeOptions>>();
 
-            var options = service.GetNamedOptions("me");
-            Assert.Equal("ABCD", options.Message);
-        }
-
+        //    var options = service.GetNamedOptions("me");
+        //    Assert.Equal("ABCD", options.Message);
+        //}
 
         [Fact]
         public void SetupTargetOptionsNameIsNotCaseSensitive()

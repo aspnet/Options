@@ -19,7 +19,11 @@ namespace Microsoft.Framework.OptionsModel
 
         public virtual void Configure([NotNull]TOptions options, string name = "")
         {
-            Action.Invoke(options);
+            // Always invoke the action if no Name was specified, otherwise only if it was the requested name
+            if (string.IsNullOrEmpty(Name) || string.Equals(name, Name, StringComparison.OrdinalIgnoreCase))
+            {
+                Action.Invoke(options);
+            }
         }
     }
 }

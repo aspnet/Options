@@ -37,14 +37,11 @@ namespace Microsoft.Framework.OptionsModel
         {
             return _setups == null 
                 ? new TOptions() 
-                // Always apply default setups (no name specified), otherwise filter to actions with the correct name
-                : _setups.Where(s => string.IsNullOrEmpty(s.Name) || string.Equals(s.Name, optionsName, StringComparison.OrdinalIgnoreCase))
-                         .OrderBy(setup => setup.Order)
-                         .ThenBy(setup => setup.Name)
+                : _setups.OrderBy(setup => setup.Order)
                          .Aggregate(new TOptions(),
                                     (options, setup) =>
                                     {
-                                        setup.Configure(options);
+                                        setup.Configure(options, optionsName);
                                         return options;
                                     });
         }

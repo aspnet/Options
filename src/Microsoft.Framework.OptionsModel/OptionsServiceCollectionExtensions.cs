@@ -14,7 +14,7 @@ namespace Microsoft.Framework.DependencyInjection
     {
         private static bool IsAction(Type type)
         {
-            return (type.GetTypeInfo().IsGenericType && type.GetGenericTypeDefinition() == typeof(Action<>);
+            return (type.GetTypeInfo().IsGenericType && type.GetGenericTypeDefinition() == typeof(Action<>));
         }
 
         private static IEnumerable<Type> FindIConfigureOptions(Type type)
