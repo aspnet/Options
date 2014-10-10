@@ -6,7 +6,6 @@ namespace Microsoft.Framework.OptionsModel
     public interface IConfigureOptions<in TOptions>
     {
         int Order { get; }
-        string Name { get; }
-        void Configure(TOptions options);
+        void Configure(TOptions options, string name = "");
     }
 }

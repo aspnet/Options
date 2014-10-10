@@ -6,20 +6,41 @@ using System.Linq;
 using System.Reflection;
 using Microsoft.Framework.ConfigurationModel;
 using Microsoft.Framework.OptionsModel;
+using System.Collections.Generic;
 
 namespace Microsoft.Framework.DependencyInjection
 {
     public static class OptionsServiceCollectionExtensions
     {
+        private static bool IsAction(Type type)
+        {
+            return (type.GetTypeInfo().IsGenericType && type.GetGenericTypeDefinition() == typeof(Action<>);
+        }
+
+        private static IEnumerable<Type> FindIConfigureOptions(Type type)
+        {
+            var serviceTypes = type.GetTypeInfo().ImplementedInterfaces
+                .Where(t => t.GetTypeInfo().IsGenericType && t.GetGenericTypeDefinition() == typeof(IConfigureOptions<>));
+            if (!serviceTypes.Any())
+            {
+                string error = "TODO: No IConfigureOptions<> found.";
+                if (IsAction(type))
+                {
+                    error += " did you mean Configure(Action<T>)";
+                }
+                throw new InvalidOperationException(error);
+            }
+            return serviceTypes;
+        }
+
+
         public static IServiceCollection ConfigureOptions([NotNull]this IServiceCollection services, Type configureType)
         {
-            var serviceTypes = configureType.GetTypeInfo().ImplementedInterfaces
-                .Where(t => t.GetTypeInfo().IsGenericType && t.GetGenericTypeDefinition() == typeof(IConfigureOptions<>));
+            var serviceTypes = FindIConfigureOptions(configureType);
             foreach (var serviceType in serviceTypes)
             {
                 services.AddTransient(serviceType, configureType);
             }
-            // TODO: consider throwing if we add no services?
             return services;
         }
 
@@ -30,19 +51,16 @@ namespace Microsoft.Framework.DependencyInjection
 
         public static IServiceCollection ConfigureOptions([NotNull]this IServiceCollection services, [NotNull]object configureInstance)
         {
-            var setupType = configureInstance.GetType();
-            var serviceTypes = setupType.GetTypeInfo().ImplementedInterfaces
-                .Where(t => t.GetTypeInfo().IsGenericType && t.GetGenericTypeDefinition() == typeof(IConfigureOptions<>));
+            var serviceTypes = FindIConfigureOptions(configureInstance.GetType());
             foreach (var serviceType in serviceTypes)
             {
                 services.AddInstance(serviceType, configureInstance);
             }
-            // TODO: consider throwing if we add no services?
             return services;
         }
 
         public static IServiceCollection Configure<TOptions>([NotNull]this IServiceCollection services,
-            Action<TOptions> setupAction,
+            [NotNull] Action<TOptions> setupAction,
             string optionsName)
         {
             return services.Configure(setupAction, OptionsConstants.DefaultOrder, optionsName);
