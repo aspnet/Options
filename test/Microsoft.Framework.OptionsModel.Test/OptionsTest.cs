@@ -117,7 +117,7 @@ namespace Microsoft.Framework.OptionsModel.Tests
             };
             var config = new Configuration { new MemoryConfigurationSource(dic) };
             services.Configure<FakeOptions>(o => o.Message += "Igetstomped", -100000);
-            services.ConfigureOptions<FakeOptions>(config);
+            services.Configure<FakeOptions>(config);
             services.Configure<FakeOptions>(o => o.Message += "a", -100);
             services.ConfigureOptions<FakeOptionsSetupC>();
             services.ConfigureOptions(new FakeOptionsSetupB());
@@ -163,7 +163,7 @@ namespace Microsoft.Framework.OptionsModel.Tests
             services.Configure<FakeOptions>(o => o.Message += "Z", 10000, "2");
 
             services.ConfigureOptions(new FakeOptionsSetupB { Name = "3" });
-            services.ConfigureOptions<FakeOptions>(config, "3");
+            services.Configure<FakeOptions>(config, "3");
             services.Configure<FakeOptions>(o => o.Message += "z", 10000, "3");
 
             var service = services.BuildServiceProvider().GetService<IOptions<FakeOptions>>();

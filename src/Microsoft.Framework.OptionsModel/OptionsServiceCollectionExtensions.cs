@@ -79,13 +79,13 @@ namespace Microsoft.Framework.DependencyInjection
             return services;
         }
 
-        public static IServiceCollection ConfigureOptions<TOptions>([NotNull]this IServiceCollection services,
+        public static IServiceCollection Configure<TOptions>([NotNull]this IServiceCollection services,
             [NotNull] IConfiguration config, string optionsName)
         {
-            return services.ConfigureOptions<TOptions>(config, OptionsConstants.ConfigurationOrder, optionsName);
+            return services.Configure<TOptions>(config, OptionsConstants.ConfigurationOrder, optionsName);
         }
 
-        public static IServiceCollection ConfigureOptions<TOptions>([NotNull]this IServiceCollection services,
+        public static IServiceCollection Configure<TOptions>([NotNull]this IServiceCollection services,
             [NotNull] IConfiguration config,
             int order = OptionsConstants.ConfigurationOrder, 
             string optionsName = "")
