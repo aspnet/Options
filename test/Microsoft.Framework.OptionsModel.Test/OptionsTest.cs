@@ -26,6 +26,7 @@ namespace Microsoft.Framework.OptionsModel.Tests
             public string PrivateSetter { get; private set; }
             public string ProtectedSetter { get; protected set; }
             public string InternalSetter { get; internal set; }
+            public static string StaticProperty { get; set; }
 
             public string ReadOnly
             {
@@ -88,6 +89,19 @@ namespace Microsoft.Framework.OptionsModel.Tests
             Assert.Equal(-2, options.Integer);
             Assert.Equal(11, options.Nested.Integer);
             Assert.Equal("Derived:Sup", options.Virtual);
+        }
+
+        [Fact]
+        public void CanReadStaticProperty()
+        {
+            var dic = new Dictionary<string, string>
+            {
+                {"StaticProperty", "stuff"},
+            };
+            var config = new Configuration { new MemoryConfigurationSource(dic) };
+            var options = new ComplexOptions();
+            OptionsServices.ReadProperties(options, config);
+            Assert.Equal("stuff", ComplexOptions.StaticProperty);
         }
 
         [Theory]
@@ -212,6 +226,5 @@ namespace Microsoft.Framework.OptionsModel.Tests
             Assert.NotNull(options3);
             Assert.Equal("B", options3.Message);
         }
-
     }
 }
