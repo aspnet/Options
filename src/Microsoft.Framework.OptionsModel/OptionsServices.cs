@@ -13,8 +13,8 @@ namespace Microsoft.Framework.OptionsModel
     {
         public static void ReadProperties(object obj, IConfiguration config)
         {
-            // No convert on portable or core
-#if NET45 || ASPNET50
+            // No convert on core
+#if !ASPNETCORE50
             if (obj == null || config == null)
             {
                 return;
