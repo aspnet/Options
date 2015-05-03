@@ -22,6 +22,7 @@ namespace Microsoft.Framework.OptionsModel.Tests
             public NestedOptions Nested { get; set; }
             public int Integer { get; set; }
             public bool Boolean { get; set; }
+            public Guid Guid { get; set; }
             public virtual string Virtual { get; set; }
 
             public string PrivateSetter { get; private set; }
@@ -74,12 +75,14 @@ namespace Microsoft.Framework.OptionsModel.Tests
             {
                 {"Integer", "-2"},
                 {"Boolean", "TRUe"},
+                {"Guid", "B2A6B51D-1203-4AC6-88A3-738FEE7E6C0A"},
                 {"Nested:Integer", "11"}
             };
             var config = new Configuration(new MemoryConfigurationSource(dic));
             var options = ConfigurationBinder.Bind<ComplexOptions>(config);
             Assert.True(options.Boolean);
             Assert.Equal(-2, options.Integer);
+            Assert.Equal(Guid.Parse("B2A6B51D-1203-4AC6-88A3-738FEE7E6C0A"), options.Guid);
             Assert.Equal(11, options.Nested.Integer);
         }
 
@@ -90,6 +93,7 @@ namespace Microsoft.Framework.OptionsModel.Tests
             {
                 {"Integer", "-2"},
                 {"Boolean", "TRUe"},
+                {"Guid", "B2A6B51D-1203-4AC6-88A3-738FEE7E6C0A"},
                 {"Nested:Integer", "11"},
                 {"Virtual","Sup"}
             };
@@ -97,6 +101,7 @@ namespace Microsoft.Framework.OptionsModel.Tests
             var options = ConfigurationBinder.Bind<DerivedOptions>(config);
             Assert.True(options.Boolean);
             Assert.Equal(-2, options.Integer);
+            Assert.Equal(Guid.Parse("B2A6B51D-1203-4AC6-88A3-738FEE7E6C0A"), options.Guid);
             Assert.Equal(11, options.Nested.Integer);
             Assert.Equal("Derived:Sup", options.Virtual);
         }

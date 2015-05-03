@@ -7,6 +7,7 @@ using System.Linq;
 using System.Reflection;
 using Microsoft.Framework.ConfigurationModel;
 using Microsoft.Framework.Internal;
+using System.ComponentModel;
 
 namespace Microsoft.Framework.OptionsModel
 {
@@ -200,7 +201,12 @@ namespace Microsoft.Framework.OptionsModel
                 }
                 else
                 {
+
+#if DNX451 || DNXCORE50 || NET45
+                    return TypeDescriptor.GetConverter(type).ConvertFromInvariantString(value);
+#else
                     return Convert.ChangeType(configuration.Get(null), type);
+#endif
                 }
             }
             catch
