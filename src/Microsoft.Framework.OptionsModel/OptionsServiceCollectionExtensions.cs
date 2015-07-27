@@ -73,7 +73,7 @@ namespace Microsoft.Framework.DependencyInjection
 
         public static IServiceCollection Configure<TOptions>([NotNull]this IServiceCollection services,
             [NotNull] Action<TOptions> setupAction,
-            int order = OptionsConstants.DefaultOrder)
+            int order)
         {
             services.ConfigureOptions(new ConfigureOptions<TOptions>(setupAction)
             {
@@ -90,7 +90,7 @@ namespace Microsoft.Framework.DependencyInjection
 
         public static IServiceCollection Configure<TOptions>([NotNull]this IServiceCollection services,
             [NotNull] IConfiguration config,
-            int order = OptionsConstants.ConfigurationOrder)
+            int order)
         {
             services.ConfigureOptions(new ConfigureFromConfigurationOptions<TOptions>(config)
             {
