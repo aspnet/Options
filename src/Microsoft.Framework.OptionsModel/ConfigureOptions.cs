@@ -15,8 +15,6 @@ namespace Microsoft.Framework.OptionsModel
 
         public Action<TOptions> Action { get; private set; }
 
-        public virtual int Order { get; set; } = OptionsConstants.DefaultOrder;
-
         public virtual void Configure([NotNull]TOptions options)
         {
             Action.Invoke(options);

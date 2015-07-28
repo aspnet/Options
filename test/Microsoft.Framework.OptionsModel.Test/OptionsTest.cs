@@ -134,7 +134,7 @@ namespace Microsoft.Framework.OptionsModel.Tests
         }
 
         [Fact]
-        public void SetupCallsSortedInOrder()
+        public void SetupCallsInOrder()
         {
             var services = new ServiceCollection().AddOptions();
             var dic = new Dictionary<string, string>
@@ -143,13 +143,13 @@ namespace Microsoft.Framework.OptionsModel.Tests
             };
             var builder = new ConfigurationBuilder().AddInMemoryCollection(dic);
             var config = builder.Build();
-            services.Configure<FakeOptions>(o => o.Message += "Igetstomped", -100000);
+            services.Configure<FakeOptions>(o => o.Message += "Igetstomped");
             services.Configure<FakeOptions>(config);
-            services.Configure<FakeOptions>(o => o.Message += "a", -100);
-            services.ConfigureOptions<FakeOptionsSetupC>();
-            services.ConfigureOptions(new FakeOptionsSetupB());
+            services.Configure<FakeOptions>(o => o.Message += "a");
             services.ConfigureOptions(typeof(FakeOptionsSetupA));
-            services.Configure<FakeOptions>(o => o.Message += "z", 10000);
+            services.ConfigureOptions(new FakeOptionsSetupB());
+            services.ConfigureOptions<FakeOptionsSetupC>();
+            services.Configure<FakeOptions>(o => o.Message += "z");
 
             var service = services.BuildServiceProvider().GetService<IOptions<FakeOptions>>();
             Assert.NotNull(service);

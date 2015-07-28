@@ -24,8 +24,7 @@ namespace Microsoft.Framework.OptionsModel
                 {
                     _options = _setups == null
                         ? new TOptions()
-                        : _setups.OrderBy(setup => setup.Order)
-                                 .Aggregate(new TOptions(),
+                        : _setups.Aggregate(new TOptions(),
                                             (options, setup) =>
                                             {
                                                 setup.Configure(options);
