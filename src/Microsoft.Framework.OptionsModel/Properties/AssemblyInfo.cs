@@ -5,4 +5,4 @@ using System.Reflection;
 using System.Runtime.CompilerServices;
 
 [assembly: AssemblyMetadata("Serviceable", "True")]
-[assembly: InternalsVisibleTo("Microsoft.Framework.OptionsModel.Test")]
+[assembly: InternalsVisibleTo("Microsoft.Framework.OptionsModel.Tests")]
