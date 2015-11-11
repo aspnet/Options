@@ -48,9 +48,9 @@ namespace Microsoft.Extensions.OptionsModel.Tests
         }
 
 
-        public class FakeMonitor : IChangeTracker<FakeOptions>
+        public class FakeTracker : IOptionsChangeTracker<FakeOptions>
         {
-            public FakeMonitor(FakeChangeToken token)
+            public FakeTracker(FakeChangeToken token)
             {
                 Token = token;
             }
@@ -75,8 +75,8 @@ namespace Microsoft.Extensions.OptionsModel.Tests
             var services = new ServiceCollection().AddOptions();
             services.AddInstance<IConfigureOptions<FakeOptions>>(new CountIncrement(this));
             var changeToken = new FakeChangeToken();
-            var monitor = new FakeMonitor(changeToken);
-            services.AddInstance<IChangeTracker<FakeOptions>>(monitor);
+            var tracker = new FakeTracker(changeToken);
+            services.AddInstance<IOptionsChangeTracker<FakeOptions>>(tracker);
 
             var sp = services.BuildServiceProvider();
 
