@@ -20,8 +20,7 @@ namespace Microsoft.Extensions.DependencyInjection
             }
 
             services.TryAdd(ServiceDescriptor.Singleton(typeof(IOptions<>), typeof(OptionsManager<>)));
-            // REVIEW: what do we want the lifetime to be?  TODO: make this scoped and try to automatically do IDisposable tracking
-            services.TryAdd(ServiceDescriptor.Transient(typeof(IOptionsWatcher<>), typeof(OptionsWatcher<>)));
+            services.TryAdd(ServiceDescriptor.Singleton(typeof(IOptionsWatcher<>), typeof(OptionsWatcher<>)));
             return services;
         }
 

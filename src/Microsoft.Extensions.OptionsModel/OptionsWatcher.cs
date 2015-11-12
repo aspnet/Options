@@ -3,14 +3,13 @@
 
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using Microsoft.Extensions.Primitives;
 
 namespace Microsoft.Extensions.OptionsModel
 {
     public class OptionsWatcher<TOptions> : IOptionsWatcher<TOptions> where TOptions : class, new()
     {
-        private TOptions _options;
+        private OptionsCache<TOptions> _optionsCache;
         private IEnumerable<IConfigureOptions<TOptions>> _setups;
         private IOptionsChangeTracker<TOptions> _tracker;
 
@@ -19,6 +18,7 @@ namespace Microsoft.Extensions.OptionsModel
         {
             _tracker = tracker;
             _setups = setups;
+            _optionsCache = new OptionsCache<TOptions>(setups);
 
         }
 
@@ -26,34 +26,17 @@ namespace Microsoft.Extensions.OptionsModel
         {
             get
             {
-                if (_options == null)
-                {
-                    _options = SetupValue();
-                }
-                return _options;
+                return _optionsCache.Value;
             }
-        }
-
-        private TOptions SetupValue()
-        {
-            return _setups == null
-                ? new TOptions()
-                : _setups.Aggregate(new TOptions(),
-                                    (options, setup) =>
-                                    {
-                                        setup.Configure(options);
-                                        return options;
-                                    });
-
         }
 
         public IDisposable Watch(Action<TOptions> watcher)
         {
-            return ChangeTokenHelper.OnChange(_tracker.GetChangeToken, () =>
+            return ChangeToken.OnChange(_tracker.GetChangeToken, () =>
             {
-                // Recompute the options: REVIEW is there thread safety issues here?
-                _options = SetupValue();
-                watcher(_options);
+                // Recompute the options before calling the watchers
+                _optionsCache = new OptionsCache<TOptions>(_setups);
+                watcher(_optionsCache.Value);
             });
         }
     }
