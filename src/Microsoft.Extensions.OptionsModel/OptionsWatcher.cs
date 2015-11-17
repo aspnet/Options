@@ -10,13 +10,12 @@ namespace Microsoft.Extensions.OptionsModel
     public class OptionsWatcher<TOptions> : IOptionsWatcher<TOptions> where TOptions : class, new()
     {
         private OptionsCache<TOptions> _optionsCache;
-        private IEnumerable<IConfigureOptions<TOptions>> _setups;
-        private IOptionsChangeTracker<TOptions> _tracker;
+        private readonly IEnumerable<IConfigureOptions<TOptions>> _setups;
+        private readonly IEnumerable<IOptionsChangeTracker<TOptions>> _trackers;
 
-        // REVIEW: IEnumerable monitors?
-        public OptionsWatcher(IEnumerable<IConfigureOptions<TOptions>> setups, IOptionsChangeTracker<TOptions> tracker)
+        public OptionsWatcher(IEnumerable<IConfigureOptions<TOptions>> setups, IEnumerable<IOptionsChangeTracker<TOptions>> trackers)
         {
-            _tracker = tracker;
+            _trackers = trackers;
             _setups = setups;
             _optionsCache = new OptionsCache<TOptions>(setups);
 
@@ -32,12 +31,31 @@ namespace Microsoft.Extensions.OptionsModel
 
         public IDisposable Watch(Action<TOptions> watcher)
         {
-            return ChangeToken.OnChange(_tracker.GetChangeToken, () =>
+            var disposable = new ChangeTrackerDisposable();
+            foreach (var tracker in _trackers)
             {
-                // Recompute the options before calling the watchers
-                _optionsCache = new OptionsCache<TOptions>(_setups);
-                watcher(_optionsCache.Value);
-            });
+                disposable.Disposables.Add(ChangeToken.OnChange(tracker.GetChangeToken, () =>
+                {
+                    // Recompute the options before calling the watchers
+                    _optionsCache = new OptionsCache<TOptions>(_setups);
+                    watcher(_optionsCache.Value);
+                }));
+            }
+            return disposable;
+        }
+
+        private class ChangeTrackerDisposable : IDisposable
+        {
+            public List<IDisposable> Disposables { get; } = new List<IDisposable>();
+
+            public void Dispose()
+            {
+                foreach (var d in Disposables)
+                {
+                    d?.Dispose();
+                }
+                Disposables.Clear();
+            }
         }
     }
 }
