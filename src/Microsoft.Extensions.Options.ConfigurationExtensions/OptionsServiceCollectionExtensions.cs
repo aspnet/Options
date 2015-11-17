@@ -26,8 +26,8 @@ namespace Microsoft.Extensions.DependencyInjection
             return services;
         }
 
-        public static IServiceCollection TrackChanges<TOptions>(this IServiceCollection services, IConfiguration config)
-            where TOptions : class, new()
+        public static IServiceCollection Configure<TOptions>(this IServiceCollection services, IConfiguration config, bool trackConfigChanges)
+            where TOptions : class
         {
             if (services == null)
             {
@@ -39,7 +39,11 @@ namespace Microsoft.Extensions.DependencyInjection
                 throw new ArgumentNullException(nameof(config));
             }
 
-            services.AddInstance<IOptionsChangeTracker<TOptions>>(new ConfigurationChangeTracker<TOptions>(config));
+            services.ConfigureOptions(new ConfigureFromConfigurationOptions<TOptions>(config));
+            if (trackConfigChanges)
+            {
+                services.AddSingleton<IOptionsChangeTracker<TOptions>>(new ConfigurationChangeTracker<TOptions>(config));
+            }
             return services;
         }
     }

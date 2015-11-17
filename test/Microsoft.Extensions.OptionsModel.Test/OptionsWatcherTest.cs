@@ -2,8 +2,6 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.Diagnostics;
-using System.Threading;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Primitives;
@@ -83,10 +81,10 @@ namespace Microsoft.Extensions.OptionsModel.Tests
         public void CanWatchOptions()
         {
             var services = new ServiceCollection().AddOptions();
-            services.AddInstance<IConfigureOptions<FakeOptions>>(new CountIncrement(this));
+            services.AddSingleton<IConfigureOptions<FakeOptions>>(new CountIncrement(this));
             var changeToken = new FakeChangeToken();
             var tracker = new FakeTracker(changeToken);
-            services.AddInstance<IOptionsChangeTracker<FakeOptions>>(tracker);
+            services.AddSingleton<IOptionsChangeTracker<FakeOptions>>(tracker);
 
             var sp = services.BuildServiceProvider();
 
@@ -107,13 +105,13 @@ namespace Microsoft.Extensions.OptionsModel.Tests
         public void CanWatchOptionsWithMultipleTrackers()
         {
             var services = new ServiceCollection().AddOptions();
-            services.AddInstance<IConfigureOptions<FakeOptions>>(new CountIncrement(this));
+            services.AddSingleton<IConfigureOptions<FakeOptions>>(new CountIncrement(this));
             var changeToken = new FakeChangeToken();
             var tracker = new FakeTracker(changeToken);
-            services.AddInstance<IOptionsChangeTracker<FakeOptions>>(tracker);
+            services.AddSingleton<IOptionsChangeTracker<FakeOptions>>(tracker);
             var changeToken2 = new FakeChangeToken();
             var tracker2 = new FakeTracker(changeToken2);
-            services.AddInstance<IOptionsChangeTracker<FakeOptions>>(tracker2);
+            services.AddSingleton<IOptionsChangeTracker<FakeOptions>>(tracker2);
 
             var sp = services.BuildServiceProvider();
 
@@ -150,8 +148,8 @@ namespace Microsoft.Extensions.OptionsModel.Tests
             var config = new ConfigurationBuilder().AddInMemoryCollection().Build();
 
             var services = new ServiceCollection().AddOptions();
-            services.AddInstance<IConfigureOptions<FakeOptions>>(new CountIncrement(this));
-            services.TrackChanges<FakeOptions>(config);
+            services.AddSingleton<IConfigureOptions<FakeOptions>>(new CountIncrement(this));
+            services.Configure<FakeOptions>(config, trackConfigChanges: true);
 
             var sp = services.BuildServiceProvider();
 
@@ -168,22 +166,8 @@ namespace Microsoft.Extensions.OptionsModel.Tests
             // Verify old watch is changed too
             Assert.Equal("2", watcher.CurrentValue.Message);
 
-            cleanup.Dispose();
-            config.Reload();
-
-            // REVIEW: this fails, disposing doesn't seem to break the config callbacks
-            // Verify messages aren't changed
-            //Assert.Equal("2", updatedMessage);
-            //Assert.Equal("2", watcher.CurrentValue.Message);
+            // REVIEW: need some way to unwatch config?
         }
-
-        private int _count = 0;
-        private void IncrementCount()
-        {
-            Debugger.Launch();
-            _count++;
-        }
-
 
         public class Controller : IDisposable
         {
@@ -209,9 +193,9 @@ namespace Microsoft.Extensions.OptionsModel.Tests
             var config = new ConfigurationBuilder().AddInMemoryCollection().Build();
 
             var services = new ServiceCollection().AddOptions();
-            services.AddInstance<IConfigureOptions<FakeOptions>>(new CountIncrement(this));
+            services.AddSingleton<IConfigureOptions<FakeOptions>>(new CountIncrement(this));
             services.AddTransient<Controller, Controller>();
-            services.TrackChanges<FakeOptions>(config);
+            services.Configure<FakeOptions>(config, trackConfigChanges: true);
 
             var sp = services.BuildServiceProvider();
 
