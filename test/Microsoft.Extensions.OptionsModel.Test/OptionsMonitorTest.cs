@@ -159,8 +159,7 @@ namespace Microsoft.Extensions.OptionsModel.Tests
 
             string updatedMessage = null;
 
-
-            var cleanup = monitor.OnChange(o => updatedMessage = o.Message);
+            var cleanup = monitor.OnChange(o => updatedMessage = o.Message) as ChangeTrackerDisposable;
 
             config.Reload();
             Assert.Equal("2", updatedMessage);
@@ -168,13 +167,14 @@ namespace Microsoft.Extensions.OptionsModel.Tests
             // Verify old watch is changed too
             Assert.Equal("2", monitor.CurrentValue.Message);
 
+            Assert.Equal(1, cleanup.Disposables.Count);
+
             cleanup.Dispose();
             config.Reload();
 
             // Verify things don't change after the subscription is disposed
             Assert.Equal("2", updatedMessage);
             Assert.Equal("2", monitor.CurrentValue.Message);
-
         }
 
         public class Controller : IDisposable

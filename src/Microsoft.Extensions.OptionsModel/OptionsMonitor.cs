@@ -35,6 +35,7 @@ namespace Microsoft.Extensions.OptionsModel
             {
 
                 Action<object> callback = null;
+                IDisposable previousSubscription = null;
                 callback = (s) =>
                 {
                     // The order here is important. We need to take the token and then apply our changes BEFORE
@@ -47,26 +48,18 @@ namespace Microsoft.Extensions.OptionsModel
                     // Recompute the options before calling the watchers
                     _optionsCache = new OptionsCache<TOptions>(_setups);
                     listener(_optionsCache.Value);
-                    disposable.Disposables.Add(token.RegisterChangeCallback(callback, s));
+
+                    // Remove the old callback after its been fired
+                    var nextSubscription = token.RegisterChangeCallback(callback, s);
+                    disposable.Disposables.Add(nextSubscription);
+                    disposable.Disposables.Remove(previousSubscription);
+                    previousSubscription = nextSubscription;
                 };
 
-                disposable.Disposables.Add(source.GetChangeToken().RegisterChangeCallback(callback, state: null));
+                previousSubscription = source.GetChangeToken().RegisterChangeCallback(callback, state: null);
+                disposable.Disposables.Add(previousSubscription);
             }
             return disposable;
-        }
-
-        private class ChangeTrackerDisposable : IDisposable
-        {
-            public List<IDisposable> Disposables { get; } = new List<IDisposable>();
-
-            public void Dispose()
-            {
-                foreach (var d in Disposables)
-                {
-                    d?.Dispose();
-                }
-                Disposables.Clear();
-            }
         }
     }
 }
