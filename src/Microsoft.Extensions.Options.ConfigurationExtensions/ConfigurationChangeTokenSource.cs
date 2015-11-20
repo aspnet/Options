@@ -7,11 +7,11 @@ using Microsoft.Extensions.Primitives;
 
 namespace Microsoft.Extensions.OptionsModel
 {
-    public class ConfigurationChangeTracker<TOptions> : IOptionsChangeTracker<TOptions>
+    public class ConfigurationChangeTokenSource<TOptions> : IOptionsChangeTokenSource<TOptions>
     {
         private IConfiguration _config;
 
-        public ConfigurationChangeTracker(IConfiguration config)
+        public ConfigurationChangeTokenSource(IConfiguration config)
         {
             if (config == null)
             {

@@ -20,7 +20,7 @@ namespace Microsoft.Extensions.DependencyInjection
             }
 
             services.TryAdd(ServiceDescriptor.Singleton(typeof(IOptions<>), typeof(OptionsManager<>)));
-            services.TryAdd(ServiceDescriptor.Singleton(typeof(IOptionsWatcher<>), typeof(OptionsWatcher<>)));
+            services.TryAdd(ServiceDescriptor.Singleton(typeof(IOptionsMonitor<>), typeof(OptionsMonitor<>)));
             return services;
         }
 

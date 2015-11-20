@@ -8,7 +8,7 @@ using System.Threading;
 
 namespace Microsoft.Extensions.OptionsModel
 {
-    public class OptionsCache<TOptions> where TOptions : class, new()
+    internal class OptionsCache<TOptions> where TOptions : class, new()
     {
         private readonly Func<TOptions> _createCache;
         private object _cacheLock = new object();

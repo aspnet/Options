@@ -42,7 +42,7 @@ namespace Microsoft.Extensions.DependencyInjection
             services.ConfigureOptions(new ConfigureFromConfigurationOptions<TOptions>(config));
             if (trackConfigChanges)
             {
-                services.AddSingleton<IOptionsChangeTracker<TOptions>>(new ConfigurationChangeTracker<TOptions>(config));
+                services.AddSingleton<IOptionsChangeTokenSource<TOptions>>(new ConfigurationChangeTokenSource<TOptions>(config));
             }
             return services;
         }

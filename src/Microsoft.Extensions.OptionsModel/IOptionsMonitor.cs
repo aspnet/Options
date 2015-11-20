@@ -1,13 +1,13 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using Microsoft.Extensions.Primitives;
+using System;
 
 namespace Microsoft.Extensions.OptionsModel
 {
-    public interface IOptionsChangeTracker<out TOptions>
+    public interface IOptionsMonitor<out TOptions>
     {
-        IChangeToken GetChangeToken();
-        void Changed();
+        TOptions CurrentValue { get; }
+        IDisposable OnChange(Action<TOptions> listener);
     }
 }

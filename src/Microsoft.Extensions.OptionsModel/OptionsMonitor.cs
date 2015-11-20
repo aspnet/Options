@@ -3,19 +3,18 @@
 
 using System;
 using System.Collections.Generic;
-using Microsoft.Extensions.Primitives;
 
 namespace Microsoft.Extensions.OptionsModel
 {
-    public class OptionsWatcher<TOptions> : IOptionsWatcher<TOptions> where TOptions : class, new()
+    public class OptionsMonitor<TOptions> : IOptionsMonitor<TOptions> where TOptions : class, new()
     {
         private OptionsCache<TOptions> _optionsCache;
         private readonly IEnumerable<IConfigureOptions<TOptions>> _setups;
-        private readonly IEnumerable<IOptionsChangeTracker<TOptions>> _trackers;
+        private readonly IEnumerable<IOptionsChangeTokenSource<TOptions>> _sources;
 
-        public OptionsWatcher(IEnumerable<IConfigureOptions<TOptions>> setups, IEnumerable<IOptionsChangeTracker<TOptions>> trackers)
+        public OptionsMonitor(IEnumerable<IConfigureOptions<TOptions>> setups, IEnumerable<IOptionsChangeTokenSource<TOptions>> sources)
         {
-            _trackers = trackers;
+            _sources = sources;
             _setups = setups;
             _optionsCache = new OptionsCache<TOptions>(setups);
 
@@ -29,17 +28,29 @@ namespace Microsoft.Extensions.OptionsModel
             }
         }
 
-        public IDisposable Watch(Action<TOptions> watcher)
+        public IDisposable OnChange(Action<TOptions> listener)
         {
             var disposable = new ChangeTrackerDisposable();
-            foreach (var tracker in _trackers)
+            foreach (var source in _sources)
             {
-                disposable.Disposables.Add(ChangeToken.OnChange(tracker.GetChangeToken, () =>
+
+                Action<object> callback = null;
+                callback = (s) =>
                 {
+                    // The order here is important. We need to take the token and then apply our changes BEFORE
+                    // registering. This prevents us from possible having two change updates to process concurrently.
+                    //
+                    // If the token changes after we take the token, then we'll process the update immediately upon
+                    // registering the callback.
+                    var token = source.GetChangeToken();
+
                     // Recompute the options before calling the watchers
                     _optionsCache = new OptionsCache<TOptions>(_setups);
-                    watcher(_optionsCache.Value);
-                }));
+                    listener(_optionsCache.Value);
+                    disposable.Disposables.Add(token.RegisterChangeCallback(callback, s));
+                };
+
+                disposable.Disposables.Add(source.GetChangeToken().RegisterChangeCallback(callback, state: null));
             }
             return disposable;
         }
