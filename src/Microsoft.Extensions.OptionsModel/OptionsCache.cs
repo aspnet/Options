@@ -25,11 +25,14 @@ namespace Microsoft.Extensions.OptionsModel
         private TOptions CreateOptions()
         {
             var result = new TOptions();
-            return _setups?.Aggregate(result, (options, setup) =>
+            if (_setups != null)
             {
-                setup.Configure(options);
-                return options;
-            }) ?? result;
+                foreach (var setup in _setups)
+                {
+                    setup.Configure(result);
+                }
+            }
+            return result;
         }
 
         public virtual TOptions Value
