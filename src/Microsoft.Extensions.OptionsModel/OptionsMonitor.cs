@@ -17,7 +17,6 @@ namespace Microsoft.Extensions.OptionsModel
             _sources = sources;
             _setups = setups;
             _optionsCache = new OptionsCache<TOptions>(setups);
-
         }
 
         public TOptions CurrentValue

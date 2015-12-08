@@ -7,7 +7,15 @@ namespace Microsoft.Extensions.OptionsModel
 {
     public interface IOptionsChangeTokenSource<out TOptions>
     {
+        /// <summary>
+        /// Returns a IChangeToken which can be used to register a change notification callback.
+        /// </summary>
+        /// <returns></returns>
         IChangeToken GetChangeToken();
-        void Changed();
+
+        /// <summary>
+        /// Triggers the IChangeToken callback.
+        /// </summary>
+        void TriggerChange();
     }
 }
