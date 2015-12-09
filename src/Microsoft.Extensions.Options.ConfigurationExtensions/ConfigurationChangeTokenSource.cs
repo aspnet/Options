@@ -24,10 +24,5 @@ namespace Microsoft.Extensions.OptionsModel
         {
             return _config.GetReloadToken();
         }
-
-        public void Changed()
-        {
-            _config.Root.Reload();
-        }
     }
 }

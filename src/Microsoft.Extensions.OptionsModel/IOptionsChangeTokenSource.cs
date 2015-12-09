@@ -12,10 +12,5 @@ namespace Microsoft.Extensions.OptionsModel
         /// </summary>
         /// <returns></returns>
         IChangeToken GetChangeToken();
-
-        /// <summary>
-        /// Triggers the IChangeToken callback.
-        /// </summary>
-        void TriggerChange();
     }
 }
