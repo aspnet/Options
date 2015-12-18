@@ -106,5 +106,15 @@ namespace Microsoft.Extensions.DependencyInjection
             services.ConfigureOptions(new ConfigureOptions<TOptions>(setupAction));
             return services;
         }
+
+        public static IServiceCollection TryConfigure<TOptions>(this IServiceCollection services, Action<TOptions> setupAction)
+            where TOptions : class
+        {
+            if (!services.Any(s => s.ServiceType == typeof(IConfigureOptions<TOptions>)))
+            {
+                services.ConfigureOptions(new ConfigureOptions<TOptions>(setupAction));
+            }
+            return services;
+        }
     }
 }

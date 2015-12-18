@@ -302,5 +302,21 @@ namespace Microsoft.Extensions.OptionsModel.Tests
             Assert.Collection(expectedValues, assertions.ToArray());
         }
 
+       [Fact]
+        public void TryConfigure_ConfiguresOptionsOnce()
+        {
+            // Arrange
+            var services = new ServiceCollection().AddOptions();
+
+            services.TryConfigure<FakeOptions>(o => o.Message = "First");
+            services.TryConfigure<FakeOptions>(o => o.Message = "Second");
+
+            // Act
+            var options = services.BuildServiceProvider().GetService<IOptions<FakeOptions>>().Value;
+
+            // Assert
+           Assert.Equal("First", options.Message);
+           Assert.Equal(1, services.Where(s => s.ServiceType == typeof(IConfigureOptions<FakeOptions>)).Count());
+        }
     }
 }
