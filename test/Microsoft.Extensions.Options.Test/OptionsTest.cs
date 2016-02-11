@@ -339,5 +339,22 @@ namespace Microsoft.Extensions.Options.Tests
             var sp = services.BuildServiceProvider();
             Assert.Equal("Override", sp.GetRequiredService<IOptions<FakeOptions>>().Value.Message);
         }
+
+        [Fact]
+        public void TryConfigure_ConfiguresOptionsOnce()
+        {
+            // Arrange
+            var services = new ServiceCollection().AddOptions();
+
+            services.TryConfigure<FakeOptions>(o => o.Message = "First");
+            services.TryConfigure<FakeOptions>(o => o.Message = "Second");
+
+            // Act
+            var options = services.BuildServiceProvider().GetService<IOptions<FakeOptions>>().Value;
+
+            // Assert
+            Assert.Equal("First", options.Message);
+            Assert.Equal(1, services.Count(s => s.ServiceType == typeof(IConfigureOptions<FakeOptions>)));
+        }
     }
 }
