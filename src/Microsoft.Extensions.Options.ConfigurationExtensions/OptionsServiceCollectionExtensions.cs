@@ -26,6 +26,22 @@ namespace Microsoft.Extensions.DependencyInjection
             return services;
         }
 
+        public static IServiceCollection Configure<TOptions>(this IServiceCollection services, IConfigurationRoot root)
+            where TOptions : class
+        {
+            if (services == null)
+            {
+                throw new ArgumentNullException(nameof(services));
+            }
+
+            if (root == null)
+            {
+                throw new ArgumentNullException(nameof(root));
+            }
+            
+            return Configure<TOptions>(services, root.GetSection(typeof(TOptions).Name));
+        }
+
         public static IServiceCollection Configure<TOptions>(this IServiceCollection services, IConfiguration config, bool trackConfigChanges)
             where TOptions : class
         {
