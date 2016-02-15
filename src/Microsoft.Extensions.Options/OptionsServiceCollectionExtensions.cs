@@ -38,7 +38,7 @@ namespace Microsoft.Extensions.DependencyInjection
             }
 
             services.AddSingleton<IConfigureOptions<TOptions>>(new ConfigureOptions<TOptions>(configureOptions));
-            services.AddSingleton<TOptions>(sp => sp.GetRequiredService<IOptions<TOptions>>().Value);
+            services.TryAddSingleton<TOptions>(sp => sp.GetRequiredService<IOptions<TOptions>>().Value);
             return services;
         }
     }

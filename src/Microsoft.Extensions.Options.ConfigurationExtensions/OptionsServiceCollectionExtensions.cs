@@ -4,6 +4,7 @@
 using System;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Options;
+using Microsoft.Extensions.DependencyInjection.Extensions;
 
 namespace Microsoft.Extensions.DependencyInjection
 {
@@ -23,7 +24,7 @@ namespace Microsoft.Extensions.DependencyInjection
             }
 
             services.AddSingleton<IConfigureOptions<TOptions>>(new ConfigureFromConfigurationOptions<TOptions>(config));
-            services.AddSingleton<TOptions>(sp => sp.GetRequiredService<IOptions<TOptions>>().Value);
+            services.TryAddSingleton<TOptions>(sp => sp.GetRequiredService<IOptions<TOptions>>().Value);
             return services;
         }
 
@@ -41,7 +42,7 @@ namespace Microsoft.Extensions.DependencyInjection
             }
 
             services.AddSingleton<IConfigureOptions<TOptions>>(new ConfigureFromConfigurationOptions<TOptions>(config));
-            services.AddSingleton<TOptions>(sp => sp.GetRequiredService<IOptions<TOptions>>().Value);
+            services.TryAddSingleton<TOptions>(sp => sp.GetRequiredService<IOptions<TOptions>>().Value);
             if (trackConfigChanges)
             {
                 services.AddSingleton<IOptionsChangeTokenSource<TOptions>>(new ConfigurationChangeTokenSource<TOptions>(config));
