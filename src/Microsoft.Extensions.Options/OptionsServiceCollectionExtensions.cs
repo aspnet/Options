@@ -25,7 +25,7 @@ namespace Microsoft.Extensions.DependencyInjection
         }
 
         public static IServiceCollection Configure<TOptions>(this IServiceCollection services, Action<TOptions> configureOptions)
-            where TOptions : class
+            where TOptions : class, new()
         {
             if (services == null)
             {
@@ -38,6 +38,7 @@ namespace Microsoft.Extensions.DependencyInjection
             }
 
             services.AddSingleton<IConfigureOptions<TOptions>>(new ConfigureOptions<TOptions>(configureOptions));
+            services.AddSingleton<TOptions>(sp => sp.GetRequiredService<IOptions<TOptions>>().Value);
             return services;
         }
     }

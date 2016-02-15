@@ -339,5 +339,26 @@ namespace Microsoft.Extensions.Options.Tests
             var sp = services.BuildServiceProvider();
             Assert.Equal("Override", sp.GetRequiredService<IOptions<FakeOptions>>().Value.Message);
         }
+
+        [Fact]
+        public void Options_CanGetOptionsFromServiceProvider()
+        {
+            // copy  an existing SetupCallsInOrder test to set things up
+            var services = new ServiceCollection().AddOptions();
+            var dic = new Dictionary<string, string>
+            {
+                {"Message", "!"},
+            };
+            var builder = new ConfigurationBuilder().AddInMemoryCollection(dic);
+            var config = builder.Build();
+            services.Configure<FakeOptions>(o => o.Message += "Igetstomped");
+            services.Configure<FakeOptions>(config);
+            services.Configure<FakeOptions>(o => o.Message += "a");
+            services.Configure<FakeOptions>(o => o.Message += "z");
+
+            var options = services.BuildServiceProvider().GetService<FakeOptions>();
+            Assert.NotNull(options);
+            Assert.Equal("!az", options.Message);
+        }
     }
 }
