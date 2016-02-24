@@ -4,13 +4,14 @@
 using System;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Options;
+using Microsoft.Extensions.DependencyInjection.Extensions;
 
 namespace Microsoft.Extensions.DependencyInjection
 {
     public static class OptionsConfigurationServiceCollectionExtensions
     {
         public static IServiceCollection Configure<TOptions>(this IServiceCollection services, IConfiguration config)
-            where TOptions : class
+            where TOptions : class, new()
         {
             if (services == null)
             {
@@ -23,11 +24,12 @@ namespace Microsoft.Extensions.DependencyInjection
             }
 
             services.AddSingleton<IConfigureOptions<TOptions>>(new ConfigureFromConfigurationOptions<TOptions>(config));
+            services.TryAddSingleton<TOptions>(sp => sp.GetRequiredService<IOptions<TOptions>>().Value);
             return services;
         }
 
         public static IServiceCollection Configure<TOptions>(this IServiceCollection services, IConfiguration config, bool trackConfigChanges)
-            where TOptions : class
+            where TOptions : class, new()
         {
             if (services == null)
             {
@@ -40,6 +42,7 @@ namespace Microsoft.Extensions.DependencyInjection
             }
 
             services.AddSingleton<IConfigureOptions<TOptions>>(new ConfigureFromConfigurationOptions<TOptions>(config));
+            services.TryAddSingleton<TOptions>(sp => sp.GetRequiredService<IOptions<TOptions>>().Value);
             if (trackConfigChanges)
             {
                 services.AddSingleton<IOptionsChangeTokenSource<TOptions>>(new ConfigurationChangeTokenSource<TOptions>(config));
