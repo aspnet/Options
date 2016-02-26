@@ -80,8 +80,10 @@ namespace Microsoft.Extensions.Options.Tests
         [Fact]
         public void CanWatchOptions()
         {
-            var services = new ServiceCollection().AddOptions();
-            services.AddSingleton<IConfigureOptions<FakeOptions>>(new CountIncrement(this));
+            var services = new ServiceCollection()
+                .AddOptionsMonitor<FakeOptions>()
+                .AddOptions<FakeOptions>()
+                .AddSingleton<IConfigureOptions<FakeOptions>>(new CountIncrement(this));
             var changeToken = new FakeChangeToken();
             var tracker = new FakeSource(changeToken);
             services.AddSingleton<IOptionsChangeTokenSource<FakeOptions>>(tracker);
@@ -104,8 +106,10 @@ namespace Microsoft.Extensions.Options.Tests
         [Fact]
         public void CanWatchOptionsWithMultipleSources()
         {
-            var services = new ServiceCollection().AddOptions();
-            services.AddSingleton<IConfigureOptions<FakeOptions>>(new CountIncrement(this));
+            var services = new ServiceCollection()
+                .AddOptionsMonitor<FakeOptions>()
+                .AddOptions<FakeOptions>()
+                .AddSingleton<IConfigureOptions<FakeOptions>>(new CountIncrement(this));
             var changeToken = new FakeChangeToken();
             var tracker = new FakeSource(changeToken);
             services.AddSingleton<IOptionsChangeTokenSource<FakeOptions>>(tracker);
@@ -147,9 +151,11 @@ namespace Microsoft.Extensions.Options.Tests
         {
             var config = new ConfigurationBuilder().AddInMemoryCollection().Build();
 
-            var services = new ServiceCollection().AddOptions();
-            services.AddSingleton<IConfigureOptions<FakeOptions>>(new CountIncrement(this));
-            services.Configure<FakeOptions>(config, trackConfigChanges: true);
+            var services = new ServiceCollection()
+                .AddOptionsMonitor<FakeOptions>()
+                .AddOptions<FakeOptions>()
+                .AddSingleton<IConfigureOptions<FakeOptions>>(new CountIncrement(this))
+                .Configure<FakeOptions>(config, trackConfigChanges: true);
 
             var sp = services.BuildServiceProvider();
 
@@ -200,7 +206,9 @@ namespace Microsoft.Extensions.Options.Tests
         {
             var config = new ConfigurationBuilder().AddInMemoryCollection().Build();
 
-            var services = new ServiceCollection().AddOptions();
+            var services = new ServiceCollection()
+                .AddOptionsMonitor<FakeOptions>()
+                .AddOptions<FakeOptions>();
             services.AddSingleton<IConfigureOptions<FakeOptions>>(new CountIncrement(this));
             services.AddTransient<Controller, Controller>();
             services.Configure<FakeOptions>(config, trackConfigChanges: true);
