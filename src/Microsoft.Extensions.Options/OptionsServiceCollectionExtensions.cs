@@ -3,8 +3,6 @@
 
 using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Reflection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Options;
 
@@ -12,15 +10,34 @@ namespace Microsoft.Extensions.DependencyInjection
 {
     public static class OptionsServiceCollectionExtensions
     {
-        public static IServiceCollection AddOptions(this IServiceCollection services)
+        public static IServiceCollection AddOptionsMonitor<TOptions>(this IServiceCollection services) where TOptions : class, new()
         {
             if (services == null)
             {
                 throw new ArgumentNullException(nameof(services));
             }
 
-            services.TryAdd(ServiceDescriptor.Singleton(typeof(IOptions<>), typeof(OptionsManager<>)));
             services.TryAdd(ServiceDescriptor.Singleton(typeof(IOptionsMonitor<>), typeof(OptionsMonitor<>)));
+            return services;
+        }
+
+
+        public static IServiceCollection AddOptions<TOptions>(this IServiceCollection services) where TOptions : class, new()
+        {
+            if (services == null)
+            {
+                throw new ArgumentNullException(nameof(services));
+            }
+
+            services.AddSingleton(serviceProvider =>
+            {
+                var options = new TOptions();
+                foreach (var c in serviceProvider.GetRequiredService<IEnumerable<IConfigureOptions<TOptions>>>())
+                {
+                    c.Configure(options);
+                }
+                return options;
+            });
             return services;
         }
 
