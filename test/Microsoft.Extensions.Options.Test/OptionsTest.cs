@@ -21,6 +21,11 @@ namespace Microsoft.Extensions.Options.Tests
                 Nested = new NestedOptions();
                 Virtual = "complex";
             }
+            public ComplexOptions(IOptionsInitializer<ComplexOptions> initializer) : this()
+            {
+                initializer.Initialize(this);
+            }
+
             public NestedOptions Nested { get; set; }
             public int Integer { get; set; }
             public bool Boolean { get; set; }
@@ -39,6 +44,12 @@ namespace Microsoft.Extensions.Options.Tests
 
         public class NestedOptions
         {
+            public NestedOptions() { }
+            public NestedOptions(IOptionsInitializer<NestedOptions> initializer) : this()
+            {
+                initializer.Initialize(this);
+            }
+
             public int Integer { get; set; }
         }
 
@@ -59,6 +70,12 @@ namespace Microsoft.Extensions.Options.Tests
 
         public class NullableOptions
         {
+            public NullableOptions() { }
+            public NullableOptions(IOptionsInitializer<NullableOptions> initializer) : this()
+            {
+                initializer.Initialize(this);
+            }
+
             public bool? MyNullableBool { get; set; }
             public int? MyNullableInt { get; set; }
             public DateTime? MyNullableDateTime { get; set; }
@@ -66,6 +83,12 @@ namespace Microsoft.Extensions.Options.Tests
 
         public class EnumOptions
         {
+            public EnumOptions() { }
+            public EnumOptions(IOptionsInitializer<EnumOptions> initializer) : this()
+            {
+                initializer.Initialize(this);
+            }
+
             public UriKind UriKind { get; set; }
         }
 
@@ -142,7 +165,7 @@ namespace Microsoft.Extensions.Options.Tests
         [Fact]
         public void SetupCallsInOrder()
         {
-            var services = new ServiceCollection().AddOptions();
+            var services = new ServiceCollection().AddOptions().AddSingleton<FakeOptions>();
             var dic = new Dictionary<string, string>
             {
                 {"Message", "!"},
@@ -154,9 +177,7 @@ namespace Microsoft.Extensions.Options.Tests
             services.Configure<FakeOptions>(o => o.Message += "a");
             services.Configure<FakeOptions>(o => o.Message += "z");
 
-            var service = services.BuildServiceProvider().GetService<IOptions<FakeOptions>>();
-            Assert.NotNull(service);
-            var options = service.Value;
+            var options = services.BuildServiceProvider().GetService<FakeOptions>();
             Assert.NotNull(options);
             Assert.Equal("!az", options.Message);
         }
@@ -220,13 +241,13 @@ namespace Microsoft.Extensions.Options.Tests
             IDictionary<string, object> expectedValues)
         {
             // Arrange
-            var services = new ServiceCollection().AddOptions();
+            var services = new ServiceCollection().AddOptions().AddSingleton<NullableOptions>();
             var builder = new ConfigurationBuilder().AddInMemoryCollection(configValues);
             var config = builder.Build();
             services.Configure<NullableOptions>(config);
 
             // Act
-            var options = services.BuildServiceProvider().GetService<IOptions<NullableOptions>>().Value;
+            var options = services.BuildServiceProvider().GetService<NullableOptions>();
 
             // Assert
             var optionsProps = options.GetType().GetProperties().ToDictionary(p => p.Name);
@@ -283,13 +304,13 @@ namespace Microsoft.Extensions.Options.Tests
             IDictionary<string, object> expectedValues)
         {
             // Arrange
-            var services = new ServiceCollection().AddOptions();
+            var services = new ServiceCollection().AddOptions().AddSingleton<EnumOptions>();
             var builder = new ConfigurationBuilder().AddInMemoryCollection(configValues);
             var config = builder.Build();
             services.Configure<EnumOptions>(config);
 
             // Act
-            var options = services.BuildServiceProvider().GetService<IOptions<EnumOptions>>().Value;
+            var options = services.BuildServiceProvider().GetService<EnumOptions>();
 
             // Assert
             var optionsProps = options.GetType().GetProperties().ToDictionary(p => p.Name);
@@ -300,44 +321,22 @@ namespace Microsoft.Extensions.Options.Tests
         }
 
         [Fact]
-        public void Options_StaticCreateCreateMakesOptions()
-        {
-            var options = Options.Create(new FakeOptions
-            {
-                Message = "This is a message"
-            });
-
-            Assert.Equal("This is a message", options.Value.Message);
-        }
-
-        [Fact]
-        public void OptionsWrapper_MakesOptions()
-        {
-            var options = new OptionsWrapper<FakeOptions>(new FakeOptions
-            {
-                Message = "This is a message"
-            });
-
-            Assert.Equal("This is a message", options.Value.Message);
-        }
-
-        [Fact]
         public void Options_CanOverrideForSpecificTOptions()
         {
-            var services = new ServiceCollection().AddOptions();
+            var services = new ServiceCollection().AddOptions().AddSingleton<FakeOptions>();
 
             services.Configure<FakeOptions>(options =>
             {
                 options.Message = "Initial value";
             });
 
-            services.AddSingleton(Options.Create(new FakeOptions
+            services.AddSingleton(new FakeOptions
             {
                 Message = "Override"
-            }));
+            });
 
             var sp = services.BuildServiceProvider();
-            Assert.Equal("Override", sp.GetRequiredService<IOptions<FakeOptions>>().Value.Message);
+            Assert.Equal("Override", sp.GetRequiredService<FakeOptions>().Message);
         }
     }
 }

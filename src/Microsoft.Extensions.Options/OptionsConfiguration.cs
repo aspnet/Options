@@ -5,9 +5,9 @@ using System;
 
 namespace Microsoft.Extensions.Options
 {
-    public class ConfigureOptions<TOptions> : IConfigureOptions<TOptions>, IOptionsConfiguration<TOptions> where TOptions : class
+    public class OptionsConfiguration<TOptions> : IOptionsConfiguration<TOptions> where TOptions : class
     {
-        public ConfigureOptions(Action<TOptions> action)
+        public OptionsConfiguration(Action<TOptions> action)
         {
             if (action == null)
             {
