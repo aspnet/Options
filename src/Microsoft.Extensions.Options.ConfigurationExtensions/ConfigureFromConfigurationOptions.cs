@@ -6,7 +6,7 @@ using Microsoft.Extensions.Configuration;
 
 namespace Microsoft.Extensions.Options
 {
-    public class ConfigureFromConfigurationOptions<TOptions> : ConfigureOptions<TOptions>
+    public class ConfigureFromConfigurationOptions<TOptions> : ConfigureOptions<TOptions>, IOptionsConfiguration<TOptions>
         where TOptions : class
     {
         public ConfigureFromConfigurationOptions(IConfiguration config)

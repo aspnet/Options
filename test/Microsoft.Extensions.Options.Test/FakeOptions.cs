@@ -10,6 +10,11 @@ namespace Microsoft.Extensions.Options.Tests
             Message = "";
         }
 
+        public FakeOptions(IOptionsInitializer<FakeOptions> initializer) : this()
+        {
+            initializer.Initialize(this);
+        }
+
         public string Message { get; set; }
     }
 }

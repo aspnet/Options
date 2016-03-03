@@ -23,6 +23,7 @@ namespace Microsoft.Extensions.DependencyInjection
             }
 
             services.AddSingleton<IConfigureOptions<TOptions>>(new ConfigureFromConfigurationOptions<TOptions>(config));
+            services.AddSingleton<IOptionsConfiguration<TOptions>>(new ConfigureFromConfigurationOptions<TOptions>(config));
             return services;
         }
 
