@@ -1,5 +1,5 @@
 
-var VERSION='0.1'
+var VERSION='0.2'
 var FULL_VERSION='0.1'
 var AUTHORS='Microsoft Open Technologies, Inc.'
 
