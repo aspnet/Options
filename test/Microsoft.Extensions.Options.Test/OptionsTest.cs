@@ -176,16 +176,17 @@ namespace Microsoft.Extensions.Options.Tests
             services.Configure<FakeOptions>(config);
             services.Configure<FakeOptions>(o => o.Message += "z", 100000);
             services.Configure<FakeOptions>(o => o.Message += "c", Options.DefaultConfigureOptionsOrder+11);
-            services.Configure<FakeOptions>(o => o.Message += "y", Options.DefaultConfigureOptionsOrder+21);
+            services.Configure<FakeOptions>(o => o.Message += "y", 1000);
+            services.Configure<FakeOptions>(o => o.Message += "e", Options.DefaultConfigureOptionsOrder+21);
             services.Configure<FakeOptions>(o => o.Message += "a", -100);
             services.Configure<FakeOptions>(o => o.Message += "b");
-            services.Configure<FakeOptions>(o => o.Message += "x");
+            services.Configure<FakeOptions>(o => o.Message += "d");
 
             var service = services.BuildServiceProvider().GetService<IOptions<FakeOptions>>();
             Assert.NotNull(service);
             var options = service.Value;
             Assert.NotNull(options);
-            Assert.Equal("!abcxyz", options.Message);
+            Assert.Equal("!abcdeyz", options.Message);
         }
 
         public static TheoryData Configure_GetsNullableOptionsFromConfiguration_Data
