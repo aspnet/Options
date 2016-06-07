@@ -14,5 +14,10 @@ namespace Microsoft.Extensions.Options
         /// </summary>
         /// <param name="options">The options instance to configure.</param>
         void Configure(TOptions options);
+
+        /// <summary>
+        /// Used to determine the order which IConfigureOptions will be run.
+        /// </summary>
+        int Order { get; }
     }
 }

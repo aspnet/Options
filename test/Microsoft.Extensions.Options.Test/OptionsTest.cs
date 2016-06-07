@@ -140,6 +140,28 @@ namespace Microsoft.Extensions.Options.Tests
         }
 
         [Fact]
+        public void ConfigureWithOrderDoesNotIncrementsDefaultOrder()
+        {
+            var services = new ServiceCollection().AddOptions();
+            services.Configure<FakeOptions>(o => o.Message += "z", 1000);
+            Assert.Equal(0, Options.DefaultConfigureOptionsOrder);
+            Assert.Equal(10, Options.DefaultConfigureOptionsOrderIncrement);
+        }
+
+        [Fact]
+        public void ConfigureIncrementsDefaultOrder()
+        {
+            var services = new ServiceCollection().AddOptions();
+            Assert.Equal(0, Options.DefaultConfigureOptionsOrder);
+            Assert.Equal(10, Options.DefaultConfigureOptionsOrderIncrement);
+
+            services.Configure<FakeOptions>(o => o.Message += "z");
+            Assert.Equal(10, Options.DefaultConfigureOptionsOrder);
+            services.Configure<FakeOptions>(o => o.Message += "z");
+            Assert.Equal(20, Options.DefaultConfigureOptionsOrder);
+        }
+
+        [Fact]
         public void SetupCallsInOrder()
         {
             var services = new ServiceCollection().AddOptions();
@@ -149,16 +171,21 @@ namespace Microsoft.Extensions.Options.Tests
             };
             var builder = new ConfigurationBuilder().AddInMemoryCollection(dic);
             var config = builder.Build();
-            services.Configure<FakeOptions>(o => o.Message += "Igetstomped");
+            // Run before configuration
+            services.Configure<FakeOptions>(o => o.Message += "Igetstomped", Options.DefaultConfigureOptionsOrder+Options.DefaultConfigurationBindOrderOffset-1);
             services.Configure<FakeOptions>(config);
-            services.Configure<FakeOptions>(o => o.Message += "a");
-            services.Configure<FakeOptions>(o => o.Message += "z");
+            services.Configure<FakeOptions>(o => o.Message += "z", 100000);
+            services.Configure<FakeOptions>(o => o.Message += "c", Options.DefaultConfigureOptionsOrder+11);
+            services.Configure<FakeOptions>(o => o.Message += "y", Options.DefaultConfigureOptionsOrder+21);
+            services.Configure<FakeOptions>(o => o.Message += "a", -100);
+            services.Configure<FakeOptions>(o => o.Message += "b");
+            services.Configure<FakeOptions>(o => o.Message += "x");
 
             var service = services.BuildServiceProvider().GetService<IOptions<FakeOptions>>();
             Assert.NotNull(service);
             var options = service.Value;
             Assert.NotNull(options);
-            Assert.Equal("!az", options.Message);
+            Assert.Equal("!abcxyz", options.Message);
         }
 
         public static TheoryData Configure_GetsNullableOptionsFromConfiguration_Data

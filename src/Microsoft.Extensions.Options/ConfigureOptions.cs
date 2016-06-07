@@ -26,6 +26,11 @@ namespace Microsoft.Extensions.Options
         }
 
         /// <summary>
+        /// Used to determine the order which IConfigureOptions will be run.
+        /// </summary>
+        public int Order { get; set; }
+
+        /// <summary>
         /// The configuration action.
         /// </summary>
         public Action<TOptions> Action { get; }
