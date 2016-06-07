@@ -143,22 +143,22 @@ namespace Microsoft.Extensions.Options.Tests
         public void ConfigureWithOrderDoesNotIncrementsDefaultOrder()
         {
             var services = new ServiceCollection().AddOptions();
+            var initial = Options.DefaultConfigureOptionsOrder;
             services.Configure<FakeOptions>(o => o.Message += "z", 1000);
-            Assert.Equal(0, Options.DefaultConfigureOptionsOrder);
-            Assert.Equal(10, Options.DefaultConfigureOptionsOrderIncrement);
+            Assert.Equal(initial, Options.DefaultConfigureOptionsOrder);
         }
 
         [Fact]
         public void ConfigureIncrementsDefaultOrder()
         {
             var services = new ServiceCollection().AddOptions();
-            Assert.Equal(0, Options.DefaultConfigureOptionsOrder);
+            var initial = Options.DefaultConfigureOptionsOrder;
             Assert.Equal(10, Options.DefaultConfigureOptionsOrderIncrement);
 
             services.Configure<FakeOptions>(o => o.Message += "z");
-            Assert.Equal(10, Options.DefaultConfigureOptionsOrder);
+            Assert.Equal(initial+10, Options.DefaultConfigureOptionsOrder);
             services.Configure<FakeOptions>(o => o.Message += "z");
-            Assert.Equal(20, Options.DefaultConfigureOptionsOrder);
+            Assert.Equal(initial+20, Options.DefaultConfigureOptionsOrder);
         }
 
         [Fact]
