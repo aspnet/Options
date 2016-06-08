@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Linq;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Options;
 
@@ -22,7 +23,17 @@ namespace Microsoft.Extensions.DependencyInjection
         public static IServiceCollection Configure<TOptions>(this IServiceCollection services, IConfiguration config)
             where TOptions : class
         {
-            return services.Configure<TOptions>(config, Options.Options.NextDefaultConfigureOptionsOrder() + Options.Options.DefaultConfigurationBindOrderOffset);
+            var setups = services.Where(s => s.ServiceType == typeof(IConfigureOptions<TOptions>) && s.ImplementationInstance != null && s.ImplementationType == typeof(ConfigureFromConfigurationOptions<TOptions>));
+            var order = -10000; // REVIEW: should we expose this default constant for config?
+            if (setups.Any())
+            {
+                order = setups.Select(s => s.ImplementationInstance)
+                    .Cast<ConfigureFromConfigurationOptions<TOptions>>()
+                    .Select(c => c.Order)
+                    .Max() + 10;
+            }
+
+            return services.Configure<TOptions>(config, order);
         }
 
         /// <summary>

@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Linq;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Options;
 
@@ -38,7 +39,17 @@ namespace Microsoft.Extensions.DependencyInjection
         public static IServiceCollection Configure<TOptions>(this IServiceCollection services, Action<TOptions> configureOptions)
             where TOptions : class
         {
-            return services.Configure(configureOptions, Options.Options.NextDefaultConfigureOptionsOrder());
+            var setups = services.Where(s => s.ServiceType == typeof(IConfigureOptions<TOptions>) && s.ImplementationInstance != null);
+            var order = 1;
+            if (setups.Any())
+            {
+                order = setups.Select(s => s.ImplementationInstance)
+                .Cast<IConfigureOptions<TOptions>>()
+                .Select(c => c.Order)
+                // REVIEW: what's the ideal increment?
+                .Max() + 10;
+            }
+            return services.Configure(configureOptions, order);
         }
 
         /// <summary>
