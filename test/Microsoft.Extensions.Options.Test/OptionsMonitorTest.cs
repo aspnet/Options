@@ -224,6 +224,8 @@ namespace Microsoft.Extensions.Options.Tests
                 _test = test;
             }
 
+            public int Order { get; set; }
+
             public void Configure(FakeOptions options)
             {
                 _test.SetupInvokeCount++;

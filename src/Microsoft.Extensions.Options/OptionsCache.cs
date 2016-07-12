@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading;
 
 namespace Microsoft.Extensions.Options
@@ -26,7 +27,8 @@ namespace Microsoft.Extensions.Options
             var result = new TOptions();
             if (_setups != null)
             {
-                foreach (var setup in _setups)
+                var ordered = _setups.OrderBy(setup => setup.Order);
+                foreach (var setup in ordered)
                 {
                     setup.Configure(result);
                 }

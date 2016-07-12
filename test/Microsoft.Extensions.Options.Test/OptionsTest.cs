@@ -145,20 +145,38 @@ namespace Microsoft.Extensions.Options.Tests
             var services = new ServiceCollection().AddOptions();
             var dic = new Dictionary<string, string>
             {
+                {"Message", "-"},
+            };
+            var config = new ConfigurationBuilder().AddInMemoryCollection(dic).Build();
+            var dic2 = new Dictionary<string, string>
+            {
                 {"Message", "!"},
             };
-            var builder = new ConfigurationBuilder().AddInMemoryCollection(dic);
-            var config = builder.Build();
-            services.Configure<FakeOptions>(o => o.Message += "Igetstomped");
+            var config2 = new ConfigurationBuilder().AddInMemoryCollection(dic2).Build();
+
+            // Run before configuration
+            services.Configure<FakeOptions>(o => o.Message += "Igetstomped", -25001);
             services.Configure<FakeOptions>(config);
-            services.Configure<FakeOptions>(o => o.Message += "a");
-            services.Configure<FakeOptions>(o => o.Message += "z");
+            services.Configure<FakeOptions>(config2, -9999); // Config 2
+            services.Configure<FakeOptions>(o => o.Message += "a", -100);
+            services.Configure<FakeOptions>(o => o.Message += "b"); // order at -90
+            services.Configure<FakeOptions>(o => o.Message += "c", -89);
+            services.Configure<FakeOptions>(o => o.Message += "d"); // order at -79
+            services.Configure<FakeOptions>(o => o.Message += "e", -74);
+            services.Configure<FakeOptions>(o => o.Message += "f"); // order at -64
+            services.Configure<FakeOptions>(o => o.Message += "g", -63);
+            services.Configure<FakeOptions>(o => o.Message += "h", 1);
+            services.Configure<FakeOptions>(o => o.Message += "i"); // order at 11
+            services.Configure<FakeOptions>(o => o.Message += "j", 12);
+
+            services.Configure<FakeOptions>(o => o.Message += "z", 100000);
+            services.Configure<FakeOptions>(o => o.Message += "y", 1000);
 
             var service = services.BuildServiceProvider().GetService<IOptions<FakeOptions>>();
             Assert.NotNull(service);
             var options = service.Value;
             Assert.NotNull(options);
-            Assert.Equal("!az", options.Message);
+            Assert.Equal("!abcdefghijyz", options.Message);
         }
 
         public static TheoryData Configure_GetsNullableOptionsFromConfiguration_Data
