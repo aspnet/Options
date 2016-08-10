@@ -300,6 +300,24 @@ namespace Microsoft.Extensions.Options.Tests
         }
 
         [Fact]
+        public void Configure_CanUseServiceProvider()
+        {
+            var randomString = new Random().Next().ToString();
+
+            var services = new ServiceCollection()
+                .AddOptions()
+                .AddSingleton(randomString)
+                .Configure<FakeOptions>((options, provider) =>
+                {
+                    options.Message = provider.GetService<string>();
+                });
+
+            var configured = services.BuildServiceProvider().GetService<IOptions<FakeOptions>>().Value.Message;
+
+            Assert.Equal(randomString, configured);
+        }
+
+        [Fact]
         public void Options_StaticCreateCreateMakesOptions()
         {
             var options = Options.Create(new FakeOptions
