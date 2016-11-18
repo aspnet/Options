@@ -1,5 +1,5 @@
 {
-  "version": "1.1.0-*",
+  "version": "1.1.0",
   "buildOptions": {
     "warningsAsErrors": true,
     "keyFile": "../../tools/Key.snk",
@@ -10,9 +10,9 @@
   },
   "description": "Provides a strongly typed way of specifying and accessing settings using dependency injection.",
   "dependencies": {
-    "Microsoft.Extensions.DependencyInjection.Abstractions": "1.1.0-*",
-    "Microsoft.Extensions.Primitives": "1.1.0-*",
-    "NETStandard.Library": "1.6.1-*"
+    "Microsoft.Extensions.DependencyInjection.Abstractions": "1.1.0",
+    "Microsoft.Extensions.Primitives": "1.1.0",
+    "NETStandard.Library": "1.6.1"
   },
   "packOptions": {
     "repository": {
@@ -27,7 +27,7 @@
   "frameworks": {
     "netstandard1.0": {
       "dependencies": {
-        "System.ComponentModel": "4.3.0-*"
+        "System.ComponentModel": "4.3.0"
       }
     }
   }
