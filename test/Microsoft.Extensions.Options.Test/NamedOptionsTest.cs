@@ -25,7 +25,7 @@ namespace Microsoft.Extensions.Options.Tests
         }
 
         [Fact]
-        public void Options_CanOverrideForSpecificTOptions()
+        public void CanResolveDifferentOptionsBasedOnScopeName()
         {
             var services = new ServiceCollection()
                 .AddScoped<IOptionsNameSelector, MyNameSelector>()

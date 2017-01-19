@@ -12,9 +12,7 @@ namespace Microsoft.Extensions.Options
     /// <typeparam name="TOptions"></typeparam>
     public class OptionsManager<TOptions> : IOptions<TOptions> where TOptions : class, new()
     {
-        //private readonly Dictionary<string, TOptions> _cache = new Dictionary<string, TOptions>();
         private readonly IEnumerable<IConfigureOptions<TOptions>> _setups;
-        private readonly object _cacheLock = new object();
         private readonly IOptionsNameSelector _selector;
         private IOptionsCache<TOptions> _cache;
 
