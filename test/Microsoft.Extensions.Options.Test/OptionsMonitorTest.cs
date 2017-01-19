@@ -48,6 +48,8 @@ namespace Microsoft.Extensions.Options.Tests
                 _test = test;
             }
 
+            public string NamedInstance { get; set; }
+
             public void Configure(FakeOptions options)
             {
                 _test.SetupInvokeCount++;

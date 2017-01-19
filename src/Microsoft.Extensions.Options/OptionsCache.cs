@@ -7,6 +7,44 @@ using System.Threading;
 
 namespace Microsoft.Extensions.Options
 {
+    public interface IOptionsCache<TOptions> where TOptions : class, new()
+    {
+        TOptions Get(string namedInstance);
+        void Put(string namedInstance, TOptions value);
+    }
+
+    public class DefaultOptionsCache<TOptions> : IOptionsCache<TOptions> where TOptions : class, new()
+    {
+        private readonly Dictionary<string, TOptions> _cache = new Dictionary<string, TOptions>();
+        private TOptions _value;
+
+        public TOptions Get(string namedInstance)
+        {
+            if (namedInstance == null)
+            {
+                return _value;
+            }
+            if (_cache.ContainsKey(namedInstance))
+            {
+                return _cache[namedInstance];
+            }
+            return null;
+        }
+
+        public void Put(string namedInstance, TOptions value)
+        {
+            if (namedInstance == null)
+            {
+                _value = value;
+            }
+            else
+            {
+                _cache[namedInstance] = value;
+            }
+        }
+    }
+
+
     internal class OptionsCache<TOptions> where TOptions : class, new()
     {
         private readonly Func<TOptions> _createCache;
@@ -34,7 +72,7 @@ namespace Microsoft.Extensions.Options
             return result;
         }
 
-        public virtual TOptions Value
+        public TOptions Value
         {
             get
             {

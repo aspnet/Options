@@ -24,7 +24,9 @@ namespace Microsoft.Extensions.DependencyInjection
                 throw new ArgumentNullException(nameof(services));
             }
 
-            services.TryAdd(ServiceDescriptor.Singleton(typeof(IOptions<>), typeof(OptionsManager<>)));
+            services.TryAdd(ServiceDescriptor.Singleton<IOptionsNameSelector, DefaultOptionsNameSelector>());
+            services.TryAdd(ServiceDescriptor.Singleton(typeof(IOptionsCache<>), typeof(DefaultOptionsCache<>)));
+            services.TryAdd(ServiceDescriptor.Scoped(typeof(IOptions<>), typeof(OptionsManager<>)));
             services.TryAdd(ServiceDescriptor.Singleton(typeof(IOptionsMonitor<>), typeof(OptionsMonitor<>)));
             services.TryAdd(ServiceDescriptor.Scoped(typeof(IOptionsSnapshot<>), typeof(OptionsSnapshot<>)));
             return services;
@@ -37,7 +39,18 @@ namespace Microsoft.Extensions.DependencyInjection
         /// <param name="services">The <see cref="IServiceCollection"/> to add the services to.</param>
         /// <param name="configureOptions">The action used to configure the options.</param>
         /// <returns>The <see cref="IServiceCollection"/> so that additional calls can be chained.</returns>
-        public static IServiceCollection Configure<TOptions>(this IServiceCollection services, Action<TOptions> configureOptions)
+        public static IServiceCollection Configure<TOptions>(this IServiceCollection services, Action<TOptions> configureOptions) where TOptions : class
+            => services.Configure(namedInstance: null, configureOptions: configureOptions);
+
+        /// <summary>
+        /// Registers an action used to configure a particular type of options.
+        /// </summary>
+        /// <typeparam name="TOptions">The options type to be configured.</typeparam>
+        /// <param name="services">The <see cref="IServiceCollection"/> to add the services to.</param>
+        /// <param name="namedInstance">The name of the options instance to configure, null is the default.</param>
+        /// <param name="configureOptions">The action used to configure the options.</param>
+        /// <returns>The <see cref="IServiceCollection"/> so that additional calls can be chained.</returns>
+        public static IServiceCollection Configure<TOptions>(this IServiceCollection services, string namedInstance, Action<TOptions> configureOptions)
             where TOptions : class
         {
             if (services == null)
@@ -50,7 +63,7 @@ namespace Microsoft.Extensions.DependencyInjection
                 throw new ArgumentNullException(nameof(configureOptions));
             }
 
-            services.AddSingleton<IConfigureOptions<TOptions>>(new ConfigureOptions<TOptions>(configureOptions));
+            services.AddSingleton<IConfigureOptions<TOptions>>(new ConfigureOptions<TOptions>(configureOptions) { NamedInstance = namedInstance });
             return services;
         }
     }
