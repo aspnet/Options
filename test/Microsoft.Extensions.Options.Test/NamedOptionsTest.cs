@@ -17,9 +17,13 @@ namespace Microsoft.Extensions.Options.Tests
         {
             private static int _count;
 
-            public string ResolveName()
+            public MyNameSelector()
             {
                 _count++;
+            }
+
+            public string ResolveName()
+            {
                 return _count.ToString();
             }
         }
@@ -42,14 +46,14 @@ namespace Microsoft.Extensions.Options.Tests
 
             var sp = services.BuildServiceProvider();
 
-            var scope = sp.GetRequiredService<IServiceScopeFactory>();
-            using (scope.CreateScope())
+            var factory = sp.GetRequiredService<IServiceScopeFactory>();
+            using (var scope = factory.CreateScope())
             {
-                Assert.Equal("one", sp.GetRequiredService<IOptions<FakeOptions>>().Value.Message);
+                Assert.Equal("one", scope.ServiceProvider.GetRequiredService<IOptions<FakeOptions>>().Value.Message);
             }
-            using (scope.CreateScope())
+            using (var scope = factory.CreateScope())
             {
-                Assert.Equal("two", sp.GetRequiredService<IOptions<FakeOptions>>().Value.Message);
+                Assert.Equal("two", scope.ServiceProvider.GetRequiredService<IOptions<FakeOptions>>().Value.Message);
             }
         }
     }
