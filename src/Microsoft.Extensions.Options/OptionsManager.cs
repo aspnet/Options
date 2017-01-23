@@ -29,15 +29,9 @@ namespace Microsoft.Extensions.Options
             _selector = selector;
         }
 
-        private TOptions CreateOptions(string namedInstance)
+        public TOptions GetNamedInstance(string name)
         {
-            var filteredSetups = _setups.Where(s => s.NamedInstance == namedInstance);
-            var result = new TOptions();
-            foreach (var setup in filteredSetups)
-            {
-                setup.Configure(result);
-            }
-            return result;
+            return _cache.GetOrUpdate(_setups, name);
         }
 
         /// <summary>
@@ -47,21 +41,7 @@ namespace Microsoft.Extensions.Options
         {
             get
             {
-                var namedInstance = _selector.ResolveName();
-                var result = _cache.Get(namedInstance);
-                if (result == null)
-                {
-                    lock (_cache)
-                    {
-                        result = _cache.Get(namedInstance);
-                        if (result == null)
-                        {
-                            result = CreateOptions(namedInstance);
-                            _cache.Put(namedInstance, result);
-                        }
-                    }
-                }
-                return result;
+                return GetNamedInstance(_selector.ResolveName());
             }
         }
     }

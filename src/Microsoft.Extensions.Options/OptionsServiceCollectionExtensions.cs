@@ -25,7 +25,9 @@ namespace Microsoft.Extensions.DependencyInjection
             }
 
             services.TryAdd(ServiceDescriptor.Singleton<IOptionsNameSelector, DefaultOptionsNameSelector>());
+            // REVIEW: should monitor and options share a cache??
             services.TryAdd(ServiceDescriptor.Singleton(typeof(IOptionsCache<>), typeof(DefaultOptionsCache<>)));
+            services.TryAdd(ServiceDescriptor.Singleton(typeof(IOptionsMonitorCache<>), typeof(DefaultOptionsCache<>)));
             services.TryAdd(ServiceDescriptor.Scoped(typeof(IOptions<>), typeof(OptionsManager<>)));
             services.TryAdd(ServiceDescriptor.Singleton(typeof(IOptionsMonitor<>), typeof(OptionsMonitor<>)));
             services.TryAdd(ServiceDescriptor.Scoped(typeof(IOptionsSnapshot<>), typeof(OptionsSnapshot<>)));

@@ -13,5 +13,12 @@ namespace Microsoft.Extensions.Options
         /// The configured TOptions instance.
         /// </summary>
         TOptions Value { get; }
+
+        /// <summary>
+        /// Returns the configured instance for the name.
+        /// </summary>
+        /// <param name="name">The name of the configured options.</param>
+        /// <returns>The configured instance for the name.</returns>
+        TOptions GetNamedInstance(string name);
     }
 }
