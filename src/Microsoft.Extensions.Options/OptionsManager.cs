@@ -14,7 +14,6 @@ namespace Microsoft.Extensions.Options
     {
         private readonly IEnumerable<IConfigureOptions<TOptions>> _setups;
         private readonly IOptionsNameSelector _selector;
-        private IOptionsCache<TOptions> _cache;
 
         /// <summary>
         /// Initializes a new instance with the specified options configurations.
@@ -24,14 +23,14 @@ namespace Microsoft.Extensions.Options
         /// <param name="cache">The options instance cache which determines the lifetime of the instances.</param>
         public OptionsManager(IEnumerable<IConfigureOptions<TOptions>> setups, IOptionsNameSelector selector, IOptionsCache<TOptions> cache)
         {
-            _cache = cache;
+            Cache = cache;
             _setups = setups;
             _selector = selector;
         }
 
         public TOptions GetNamedInstance(string name)
         {
-            return _cache.GetOrUpdate(_setups, name);
+            return Cache.GetOrUpdate(_setups, name);
         }
 
         /// <summary>
@@ -44,5 +43,7 @@ namespace Microsoft.Extensions.Options
                 return GetNamedInstance(_selector.ResolveName());
             }
         }
+
+        protected IOptionsCache<TOptions> Cache { get; private set; }
     }
 }
