@@ -101,9 +101,13 @@ namespace Microsoft.Extensions.Options.Tests
         {
             public static int ConfigureCount;
 
-            public void Configure(FakeOptions options)
+            public TestConfigure()
             {
                 ConfigureCount++;
+            }
+
+            public void Configure(FakeOptions options)
+            {
             }
         }
 
@@ -113,7 +117,7 @@ namespace Microsoft.Extensions.Options.Tests
         {
             var services = new ServiceCollection()
                 .AddOptions()
-                .AddSingleton<IConfigureOptions<FakeOptions>, TestConfigure>()
+                .AddScoped<IConfigureOptions<FakeOptions>, TestConfigure>()
                 .BuildServiceProvider();
 
             var factory = services.GetRequiredService<IServiceScopeFactory>();
