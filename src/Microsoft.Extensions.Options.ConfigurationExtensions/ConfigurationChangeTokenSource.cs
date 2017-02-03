@@ -28,6 +28,8 @@ namespace Microsoft.Extensions.Options
             _config = config;
         }
 
+        public string NamedInstance { get; set; }
+
         /// <summary>
         /// Returns the reloadToken from IConfiguration.
         /// </summary>

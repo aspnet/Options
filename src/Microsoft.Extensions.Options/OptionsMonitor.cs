@@ -11,10 +11,8 @@ namespace Microsoft.Extensions.Options
     /// Implementation of IOptionsMonitor.
     /// </summary>
     /// <typeparam name="TOptions"></typeparam>
-    public class OptionsMonitor<TOptions> : IOptionsMonitor<TOptions> where TOptions : class, new()
+    public class OptionsMonitor<TOptions> : OptionsManager<TOptions>, IOptionsMonitor<TOptions> where TOptions : class, new()
     {
-        private OptionsCache<TOptions> _optionsCache;
-        private readonly IEnumerable<IConfigureOptions<TOptions>> _setups;
         private readonly IEnumerable<IOptionsChangeTokenSource<TOptions>> _sources;
         private List<Action<TOptions>> _listeners = new List<Action<TOptions>>();
 
@@ -23,39 +21,44 @@ namespace Microsoft.Extensions.Options
         /// </summary>
         /// <param name="setups">The configuration actions to run on an options instance.</param>
         /// <param name="sources">The sources used to listen for changes to the options instance.</param>
-        public OptionsMonitor(IEnumerable<IConfigureOptions<TOptions>> setups, IEnumerable<IOptionsChangeTokenSource<TOptions>> sources)
+        /// <param name="selector">The selector which decides which named cache to use.</param>
+        /// <param name="cache">The options instance cache which determines the lifetime of the instances.</param>
+        public OptionsMonitor(IEnumerable<IConfigureOptions<TOptions>> setups, IEnumerable<IOptionsChangeTokenSource<TOptions>> sources, IOptionsNameSelector selector, IOptionsMonitorCache<TOptions> cache) : base(setups, selector, cache)
         {
             _sources = sources;
-            _setups = setups;
-            _optionsCache = new OptionsCache<TOptions>(setups);
 
             foreach (var source in _sources)
             {
                 ChangeToken.OnChange(
                     () => source.GetChangeToken(),
-                    () => InvokeChanged());
+                    () => InvokeChanged(source.NamedInstance));
             }
         }
 
-        private void InvokeChanged()
+        private void InvokeChanged(string name)
         {
-            _optionsCache = new OptionsCache<TOptions>(_setups);
+            lock (Cache)
+            {
+                Cache.Put(name, null);
+            }
+            var newValue = GetNamedCurrentValue(name);
             foreach (var listener in _listeners)
             {
-                listener?.Invoke(_optionsCache.Value);
+                listener?.Invoke(newValue);
             }
         }
 
         /// <summary>
         /// The present value of the options.
         /// </summary>
-        public TOptions CurrentValue
-        {
-            get
-            {
-                return _optionsCache.Value;
-            }
-        }
+        public TOptions CurrentValue => Value;
+
+        /// <summary>
+        /// Returns the current TOptions instance for the name.
+        /// </summary>
+        /// <param name="name">The name of the configured options.</param>
+        /// <returns>The configured instance for the name.</returns>
+        public TOptions GetNamedCurrentValue(string name) => GetNamedInstance(name);
 
         /// <summary>
         /// Registers a listener to be called whenever TOptions changes.

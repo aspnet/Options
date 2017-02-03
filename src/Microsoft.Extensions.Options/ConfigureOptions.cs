@@ -31,6 +31,11 @@ namespace Microsoft.Extensions.Options
         public Action<TOptions> Action { get; }
 
         /// <summary>
+        /// The name of the options instance this action applies to.
+        /// </summary>
+        public string NamedInstance { get; set; }
+
+        /// <summary>
         /// Invokes the registered configure Action.
         /// </summary>
         /// <param name="options"></param>

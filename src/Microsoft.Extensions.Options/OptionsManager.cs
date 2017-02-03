@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System.Collections.Generic;
+using System.Linq;
 
 namespace Microsoft.Extensions.Options
 {
@@ -11,15 +12,25 @@ namespace Microsoft.Extensions.Options
     /// <typeparam name="TOptions"></typeparam>
     public class OptionsManager<TOptions> : IOptions<TOptions> where TOptions : class, new()
     {
-        private OptionsCache<TOptions> _optionsCache;
+        private readonly IEnumerable<IConfigureOptions<TOptions>> _setups;
+        private readonly IOptionsNameSelector _selector;
 
         /// <summary>
         /// Initializes a new instance with the specified options configurations.
         /// </summary>
         /// <param name="setups">The configuration actions to run.</param>
-        public OptionsManager(IEnumerable<IConfigureOptions<TOptions>> setups)
+        /// <param name="selector">The selector which decides which named cache to use.</param>
+        /// <param name="cache">The options instance cache which determines the lifetime of the instances.</param>
+        public OptionsManager(IEnumerable<IConfigureOptions<TOptions>> setups, IOptionsNameSelector selector, IOptionsCache<TOptions> cache)
         {
-            _optionsCache = new OptionsCache<TOptions>(setups);
+            Cache = cache;
+            _setups = setups;
+            _selector = selector;
+        }
+
+        public TOptions GetNamedInstance(string name)
+        {
+            return Cache.GetOrUpdate(_setups, name);
         }
 
         /// <summary>
@@ -29,8 +40,10 @@ namespace Microsoft.Extensions.Options
         {
             get
             {
-                return _optionsCache.Value;
+                return GetNamedInstance(_selector.ResolveName());
             }
         }
+
+        protected IOptionsCache<TOptions> Cache { get; private set; }
     }
 }

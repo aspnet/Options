@@ -48,6 +48,8 @@ namespace Microsoft.Extensions.Options.Tests
                 _test = test;
             }
 
+            public string NamedInstance { get; set; }
+
             public void Configure(FakeOptions options)
             {
                 _test.SetupInvokeCount++;
@@ -64,6 +66,8 @@ namespace Microsoft.Extensions.Options.Tests
             }
 
             public FakeChangeToken Token { get; set; }
+
+            public string NamedInstance { get; set; }
 
             public IChangeToken GetChangeToken()
             {
@@ -280,6 +284,60 @@ namespace Microsoft.Extensions.Options.Tests
 
             config.Reload();
             Assert.Equal("2", controller.Message);
+        }
+
+        public class MyNameSelector : IOptionsNameSelector
+        {
+            private static int _count;
+
+            public MyNameSelector()
+            {
+                _count++;
+            }
+
+            public string ResolveName()
+            {
+                return _count.ToString();
+            }
+        }
+
+        [Fact]
+        public void ControllerCanWatchNamedOptionsThatTrackConfigChanges()
+        {
+            var config = new ConfigurationBuilder().AddInMemoryCollection().Build();
+
+            var services = new ServiceCollection()
+                .AddScoped<IOptionsNameSelector, MyNameSelector>()
+                .AddOptions();
+
+            services.Configure<FakeOptions>("1", options =>
+            {
+                options.Message = "one";
+            });
+            services.Configure<FakeOptions>("2", options =>
+            {
+                options.Message = "two";
+            });
+            services.AddTransient<ControllerWithMonitor, ControllerWithMonitor>();
+            services.Configure<FakeOptions>("1", config);
+            services.Configure<FakeOptions>("2", config);
+
+            var sp = services.BuildServiceProvider();
+            var factory = sp.GetRequiredService<IServiceScopeFactory>();
+            using (var scope = factory.CreateScope())
+            {
+                var controller = scope.ServiceProvider.GetRequiredService<ControllerWithMonitor>();
+                Assert.Null(controller.Message);
+                config.Reload();
+                Assert.Equal("one", controller.Message);
+            }
+            using (var scope = factory.CreateScope())
+            {
+                var controller = scope.ServiceProvider.GetRequiredService<ControllerWithMonitor>();
+                Assert.Null(controller.Message);
+                config.Reload();
+                Assert.Equal("two", controller.Message);
+            }
         }
 
         [Fact]

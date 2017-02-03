@@ -1,4 +1,7 @@
-﻿namespace Microsoft.Extensions.Options
+﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
+namespace Microsoft.Extensions.Options
 {
     /// <summary>
     /// IOptions wrapper that returns the options instance.
@@ -19,5 +22,15 @@
         /// The options instance.
         /// </summary>
         public TOptions Value { get; }
+
+        /// <summary>
+        /// All names return the same instance.
+        /// </summary>
+        /// <param name="name">Ignored.</param>
+        /// <returns>The Value.</returns>
+        public TOptions GetNamedInstance(string name)
+        {
+            return Value;
+        }
     }
 }

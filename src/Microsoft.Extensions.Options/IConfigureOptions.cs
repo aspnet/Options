@@ -10,6 +10,11 @@ namespace Microsoft.Extensions.Options
     public interface IConfigureOptions<in TOptions> where TOptions : class
     {
         /// <summary>
+        /// Options instance name that's being configured
+        /// </summary>
+        string NamedInstance { get; }
+
+        /// <summary>
         /// Invoked to configure a TOptions instance.
         /// </summary>
         /// <param name="options">The options instance to configure.</param>

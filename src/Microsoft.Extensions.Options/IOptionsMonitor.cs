@@ -17,6 +17,13 @@ namespace Microsoft.Extensions.Options
         TOptions CurrentValue { get; }
 
         /// <summary>
+        /// Returns the current TOptions instance for the name.
+        /// </summary>
+        /// <param name="name">The name of the configured options.</param>
+        /// <returns>The configured instance for the name.</returns>
+        TOptions GetNamedCurrentValue(string name);
+
+        /// <summary>
         /// Registers a listener to be called whenever TOptions changes.
         /// </summary>
         /// <param name="listener">The action to be invoked when TOptions has changed.</param>
