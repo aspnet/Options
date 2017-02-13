@@ -1,5 +1,5 @@
 {
-  "version": "1.0.1",
+  "version": "1.0.2",
   "buildOptions": {
     "warningsAsErrors": true,
     "keyFile": "../../tools/Key.snk",
@@ -10,9 +10,9 @@
   },
   "description": "Provides additional configuration specific functionality related to Options.",
   "dependencies": {
-    "Microsoft.Extensions.Configuration.Abstractions": "1.0.1",
-    "Microsoft.Extensions.Configuration.Binder": "1.0.1",
-    "Microsoft.Extensions.Options": "1.0.1",
+    "Microsoft.Extensions.Configuration.Abstractions": "1.0.2",
+    "Microsoft.Extensions.Configuration.Binder": "1.0.2",
+    "Microsoft.Extensions.Options": "1.0.2",
     "Microsoft.Extensions.DependencyInjection.Abstractions": "1.0.1"
   },
   "packOptions": {
