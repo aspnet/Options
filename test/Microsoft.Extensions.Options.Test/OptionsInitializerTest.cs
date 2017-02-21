@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Collections.Generic;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Primitives;
@@ -64,6 +65,60 @@ namespace Microsoft.Extensions.Options.Tests
                 Token.HasChanged = true;
                 Token.InvokeChangeCallback();
             }
+        }
+
+        private class InvalidOptions
+        {
+            public int Value { get; set; }
+        }
+
+        private class InvalidConfiguration : IConfigureOptions<InvalidOptions>
+        {
+            public void Configure(InvalidOptions options)
+            {
+                throw new Exception();
+            }
+        }
+
+        [Theory]
+        [InlineData(0)]
+        [InlineData(1)]
+        [InlineData(2)]
+        public void InitializerDetectsInvalidConfigSourceAtStartup(int sourceId)
+        {
+            var services = new ServiceCollection().AddOptions();
+
+            services.ConfigureInitializer<InvalidOptions>();
+
+            switch (sourceId)
+            {
+                case 0:
+                    services.Configure<InvalidOptions>(o => throw new Exception());
+                    break;
+                case 1:
+                    services.AddSingleton<IConfigureOptions<InvalidOptions>>(new InvalidConfiguration());
+                    break;
+                default:
+                    var invalidConfigBuilder = new ConfigurationBuilder();
+                    invalidConfigBuilder.AddInMemoryCollection(new Dictionary<string,string>
+                    {
+                        {"Value","InvalidValue"}
+                    });
+                    services.Configure<InvalidOptions>(invalidConfigBuilder.Build());
+                    break;
+            }
+
+            var sp = services.BuildServiceProvider();
+
+            // it will throw an exception only at time when the options were requiested.
+            Assert.ThrowsAny<Exception>(() => sp.GetRequiredService<IOptions<InvalidOptions>>().Value);
+
+            var initializerManager = sp.GetRequiredService<IOptionsInitializerManager>();
+            Assert.NotNull(initializerManager);
+
+            // callint 'Initialize' method at startup of app it will initialize all registered options initializers
+            // and if something wrong it will throw an exception
+            Assert.ThrowsAny<Exception>(() => initializerManager.Initialize());
         }
 
         [Fact]
