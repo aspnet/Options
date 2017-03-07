@@ -3,7 +3,6 @@
 
 using System;
 using System.Collections.Generic;
-using System.Threading;
 using Microsoft.Extensions.Primitives;
 
 namespace Microsoft.Extensions.Options
@@ -14,10 +13,8 @@ namespace Microsoft.Extensions.Options
     /// <typeparam name="TOptions"></typeparam>
     public class OptionsMonitor<TOptions> : IOptionsMonitor<TOptions> where TOptions : class, new()
     {
-        private readonly Func<TOptions> _createOptions;
-        private object _optionsLock = new object();
-        private bool _optionsInitialized;
-        private TOptions _options;
+        private OptionsCache<TOptions> _optionsCache;
+        private readonly Func<OptionsCache<TOptions>> _createOptionsCache;
 
         private readonly List<Action<TOptions>> _listeners = new List<Action<TOptions>>();
 
@@ -26,19 +23,16 @@ namespace Microsoft.Extensions.Options
         /// </summary>
         /// <param name="setups">The configuration actions to run on an options instance.</param>
         /// <param name="sources">The sources used to listen for changes to the options instance.</param>
-        /// <param name="initializer">The options initializer object to initialize an options instance.</param>
-        public OptionsMonitor(IEnumerable<IConfigureOptions<TOptions>> setups, IEnumerable<IOptionsChangeTokenSource<TOptions>> sources, IOptionsInitializer<TOptions> initializer = null)
+        public OptionsMonitor(IEnumerable<IConfigureOptions<TOptions>> setups, IEnumerable<IOptionsChangeTokenSource<TOptions>> sources)
         {
-            initializer = initializer ?? new DefaultOptionsInitializer<TOptions>(setups);
-
-            _createOptions = () =>
+            _createOptionsCache = () =>
             {
-                initializer.InitializeOptions(reinitialize: true);
-
-                var result = initializer.Options;
+                var result = new OptionsCache<TOptions>(setups);
 
                 return result;
             };
+
+            _optionsCache = _createOptionsCache();
 
             foreach (var source in sources)
             {
@@ -50,7 +44,7 @@ namespace Microsoft.Extensions.Options
 
         private void InvokeChanged()
         {
-            _optionsInitialized = false;
+            _optionsCache = _createOptionsCache();
 
             foreach (var listener in _listeners)
             {
@@ -61,7 +55,7 @@ namespace Microsoft.Extensions.Options
         /// <summary>
         /// The present value of the options.
         /// </summary>
-        public TOptions CurrentValue => LazyInitializer.EnsureInitialized(ref _options, ref _optionsInitialized, ref _optionsLock, _createOptions);
+        public TOptions CurrentValue => _optionsCache.Value;
 
         /// <summary>
         /// Registers a listener to be called whenever TOptions changes.
