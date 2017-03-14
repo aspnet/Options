@@ -101,13 +101,9 @@ namespace Microsoft.Extensions.Options.Tests
         {
             public static int ConfigureCount;
 
-            public TestConfigure()
-            {
-                ConfigureCount++;
-            }
-
             public void Configure(FakeOptions options)
             {
+                ConfigureCount++;
             }
         }
 

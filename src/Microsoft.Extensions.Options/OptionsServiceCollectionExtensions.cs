@@ -4,6 +4,7 @@
 using System;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Options;
+using Microsoft.Extensions.Options.Factory;
 
 namespace Microsoft.Extensions.DependencyInjection
 {
@@ -23,6 +24,9 @@ namespace Microsoft.Extensions.DependencyInjection
             {
                 throw new ArgumentNullException(nameof(services));
             }
+
+            services.TryAdd(ServiceDescriptor.Singleton(typeof(IOptionsFactory<>),typeof(OptionsFactory<>)));
+            services.TryAdd(ServiceDescriptor.Transient(typeof(ICachedOptionsFactory<>), typeof(CachedOptionsFactory<>)));
 
             services.TryAdd(ServiceDescriptor.Singleton(typeof(IOptions<>), typeof(OptionsManager<>)));
             services.TryAdd(ServiceDescriptor.Scoped(typeof(IOptionsSnapshot<>), typeof(OptionsManager<>)));

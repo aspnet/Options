@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using Microsoft.Extensions.Options.Factory;
 using Microsoft.Extensions.Primitives;
 
 namespace Microsoft.Extensions.Options
@@ -13,38 +14,28 @@ namespace Microsoft.Extensions.Options
     /// <typeparam name="TOptions"></typeparam>
     public class OptionsMonitor<TOptions> : IOptionsMonitor<TOptions> where TOptions : class, new()
     {
-        private OptionsCache<TOptions> _optionsCache;
-        private readonly Func<OptionsCache<TOptions>> _createOptionsCache;
+        private readonly ICachedOptionsFactory<TOptions> _cachedOptionsFactory;
 
         private readonly List<Action<TOptions>> _listeners = new List<Action<TOptions>>();
 
         /// <summary>
         /// Constructor.
         /// </summary>
-        /// <param name="setups">The configuration actions to run on an options instance.</param>
+        /// <param name="cachedOptionsFactory">The factory to instantiate an options instance.</param>
         /// <param name="sources">The sources used to listen for changes to the options instance.</param>
-        public OptionsMonitor(IEnumerable<IConfigureOptions<TOptions>> setups, IEnumerable<IOptionsChangeTokenSource<TOptions>> sources)
+        public OptionsMonitor(ICachedOptionsFactory<TOptions> cachedOptionsFactory, IEnumerable<IOptionsChangeTokenSource<TOptions>> sources)
         {
-            _createOptionsCache = () =>
-            {
-                var result = new OptionsCache<TOptions>(setups);
-
-                return result;
-            };
-
-            _optionsCache = _createOptionsCache();
+            _cachedOptionsFactory = cachedOptionsFactory;
 
             foreach (var source in sources)
             {
-                ChangeToken.OnChange(
-                    () => source.GetChangeToken(),
-                    () => InvokeChanged());
+                ChangeToken.OnChange(source.GetChangeToken, InvokeChanged);
             }
         }
 
         private void InvokeChanged()
         {
-            _optionsCache = _createOptionsCache();
+            _cachedOptionsFactory.ResetCache();
 
             foreach (var listener in _listeners)
             {
@@ -55,7 +46,7 @@ namespace Microsoft.Extensions.Options
         /// <summary>
         /// The present value of the options.
         /// </summary>
-        public TOptions CurrentValue => _optionsCache.Value;
+        public TOptions CurrentValue => _cachedOptionsFactory.Get();
 
         /// <summary>
         /// Registers a listener to be called whenever TOptions changes.
@@ -65,7 +56,9 @@ namespace Microsoft.Extensions.Options
         public IDisposable OnChange(Action<TOptions> listener)
         {
             var disposable = new ChangeTrackerDisposable(_listeners, listener);
+
             _listeners.Add(listener);
+
             return disposable;
         }
 
@@ -80,10 +73,7 @@ namespace Microsoft.Extensions.Options
                 _listeners = listeners;
             }
 
-            public void Dispose()
-            {
-                _listeners.Remove(_originalListener);
-            }
+            public void Dispose() => _listeners.Remove(_originalListener);
         }
     }
 }
