@@ -13,8 +13,13 @@ namespace Microsoft.Extensions.Options.Validation
     /// </summary>
     public class OptionsValidationException : Exception
     {
-        internal OptionsValidationException(IEnumerable<ValidationResult> validationResults)
-            : base (validationResults.Aggregate(new StringBuilder(), (sb, vr) => sb.Append(vr.ErrorMessage)).ToString())
+        internal OptionsValidationException(IValidationResult validationResult)
+               : this(new List<IValidationResult> { validationResult })
+        {
+        }
+
+        internal OptionsValidationException(IEnumerable<IValidationResult> validationResults)
+            : base(validationResults.Aggregate(new StringBuilder(), (sb, vr) => sb.Append(vr.Message)).ToString())
         {
         }
     }

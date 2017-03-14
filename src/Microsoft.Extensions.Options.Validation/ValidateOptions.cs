@@ -1,25 +1,46 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using System;
-using System.Linq.Expressions;
-
 namespace Microsoft.Extensions.Options.Validation
 {
-    internal class ValidateOptions<TOptions> : IValidateOptions<TOptions> where TOptions : class
+    /// <summary>
+    /// Base class to be inherited in order to provide custom validation logic.
+    /// </summary>
+    /// <typeparam name="TOptions">The type of options being validated.</typeparam>
+    public abstract class ValidateOptions<TOptions> : ValidationBase<TOptions>, IValidateOptions<TOptions> where TOptions : class
     {
-        private readonly Expression<Func<TOptions, bool>> _validateExpression;
+        protected readonly ValidationStatus ValidationStatus;
+        protected readonly string ViolationMessage;
 
-        public ValidateOptions(Expression<Func<TOptions, bool>> validateExpression)
+        protected ValidateOptions() : this(ValidationStatus.Invalid, null)
         {
-            _validateExpression = validateExpression;
         }
 
-        public bool Validate(TOptions options)
+        protected ValidateOptions(ValidationStatus validationStatus) : this(validationStatus, null)
         {
-            return _validateExpression.Compile().Invoke(options);
         }
 
-        public string ErrorMessage => $"{_validateExpression.Body} returned false.";
+        protected ValidateOptions(ValidationStatus validationStatus, string violationMessage)
+        {
+            ValidationStatus = validationStatus;
+            ViolationMessage = violationMessage;
+        }
+
+        /// <summary>
+        /// Invoked to validate a TOptions instance.
+        /// </summary>
+        /// <param name="options">The options instance to validate.</param>
+        public IValidationResult Validate(TOptions options)
+        {
+            return ValidateCore(options);
+        }
+
+        protected abstract IValidationResult ValidateCore(TOptions options);
+
+        protected new IValidationResult Invalid() => Result(ValidationStatus.Invalid, ViolationMessage);
+
+        protected new IValidationResult Valid() => Result(ValidationStatus.Valid, ViolationMessage);
+
+        protected new IValidationResult Warning() => Result(ValidationStatus.Warning, ViolationMessage);
     }
 }

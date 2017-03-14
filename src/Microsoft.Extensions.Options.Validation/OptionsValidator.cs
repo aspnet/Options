@@ -3,7 +3,7 @@
 
 using System;
 using System.Collections.Generic;
-using System.Text;
+using System.Linq;
 
 namespace Microsoft.Extensions.Options.Validation
 {
@@ -11,42 +11,49 @@ namespace Microsoft.Extensions.Options.Validation
         where TOptions : class, new()
     {
         private readonly IOptions<TOptions> _options;
-        private readonly IEnumerable<IValidateOptions<TOptions>> _validateFuncs;
+        private readonly IOptionsValidator<TOptions> _optionsValidator;
 
-        public OptionsValidator(IOptions<TOptions> options, IEnumerable<IValidateOptions<TOptions>> validateFuncs)
+        public OptionsValidator(IOptions<TOptions> options, IOptionsValidator<TOptions> optionsValidator)
         {
             _options = options;
-            _validateFuncs = validateFuncs;
+            _optionsValidator = optionsValidator;
         }
 
-        public ValidationResult Validate()
+        public IValidationResult Validate()
+        {
+            return _optionsValidator.Validate(_options.Value);
+        }
+    }
+
+    internal class InnerOptionsValidator<TOptions> : ValidationBase<TOptions>, IOptionsValidator<TOptions>
+        where TOptions : class, new()
+    {
+        private readonly IEnumerable<IValidateOptions<TOptions>> _validateFuncs;
+        private readonly IValidationResultHandler _validationResultHandler;
+
+        public InnerOptionsValidator(IEnumerable<IValidateOptions<TOptions>> validateFuncs, IValidationResultHandler validationResultHandler = null)
+        {
+            _validateFuncs = validateFuncs;
+            _validationResultHandler = validationResultHandler;
+        }
+
+        public IValidationResult Validate(TOptions options)
         {
             try
             {
-                var isValid = true;
-                var errorSB = new StringBuilder().AppendLine($"{typeof(TOptions)} object is invalid:");
-
-                foreach (var validateFunc in _validateFuncs)
-                {
-                    if (!validateFunc.Validate(_options.Value))
-                    {
-                        isValid = false;
-                        errorSB.AppendLine(validateFunc.ErrorMessage);
-                    }
-                }
-
-                var errorMessage = !isValid ? errorSB.ToString() : string.Empty;
-
-                var validationResult = new ValidationResult(isValid, errorMessage);
-
-                return validationResult;
+                return Aggregate(_validateFuncs.Select(vf => vf.Validate(options)));
             }
             catch (Exception e)
             {
-                var validationErrorResult = new ValidationResult(false, e.Message);
-
-                return validationErrorResult;
+                return Invalid(e.Message);
             }
+        }
+
+        public void ValidateOptions(TOptions options)
+        {
+            var result = Aggregate(_validateFuncs.Select(vf => vf.Validate(options)));
+
+            _validationResultHandler?.Handle(result);
         }
     }
 }

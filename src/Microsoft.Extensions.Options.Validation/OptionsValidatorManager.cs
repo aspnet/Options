@@ -15,13 +15,15 @@ namespace Microsoft.Extensions.Options.Validation
             _validators = validators;
         }
 
-        public void Validate()
+        public void Validate(ValidationLevel validationLevel = ValidationLevel.Invalid)
         {
-            var errors = _validators.Select(v => v.Validate()).Where(vr => !vr.IsValid);
+            var shouldThrow = ValidationResultHandlerFactory.GetHandleCondition(validationLevel);
 
-            if(errors.Any())
+            var violations = _validators.Select(v => v.Validate()).Where(shouldThrow).ToList();
+
+            if(violations.Any())
             {
-                throw new OptionsValidationException(errors);
+                throw new OptionsValidationException(violations);
             }
         }
     }
