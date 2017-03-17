@@ -24,7 +24,7 @@ namespace Microsoft.Extensions.Options.Tests
             });
 
             var sp = services.BuildServiceProvider();
-            var option = sp.GetRequiredService<IOptionsFactory<FakeOptions>>();
+            var option = sp.GetRequiredService<IOptionsService<FakeOptions>>();
             Assert.Equal("one", option.Get("1").Message);
             Assert.Equal("two", option.Get("2").Message);
         }
@@ -42,7 +42,7 @@ namespace Microsoft.Extensions.Options.Tests
             });
 
             var sp = services.BuildServiceProvider();
-            var option = sp.GetRequiredService<IOptionsFactory<FakeOptions>>();
+            var option = sp.GetRequiredService<IOptionsService<FakeOptions>>();
             Assert.Throws<ArgumentNullException>(() => option.Get("1"));
         }
 
@@ -53,7 +53,7 @@ namespace Microsoft.Extensions.Options.Tests
             services.ConfigureAll<FakeOptions>(o => o.Message = "Default");
 
             var sp = services.BuildServiceProvider();
-            var option = sp.GetRequiredService<IOptionsFactory<FakeOptions>>();
+            var option = sp.GetRequiredService<IOptionsService<FakeOptions>>();
             Assert.Equal("Default", option.Get("1").Message);
             Assert.Equal("Default", option.Get("2").Message);
         }
@@ -71,7 +71,7 @@ namespace Microsoft.Extensions.Options.Tests
             });
 
             var sp = services.BuildServiceProvider();
-            var option = sp.GetRequiredService<IOptionsFactory<FakeOptions>>();
+            var option = sp.GetRequiredService<IOptionsService<FakeOptions>>();
             Assert.Throws<ArgumentNullException>(() => option.Get("1"));
             Assert.Throws<ArgumentNullException>(() => option.Get("2"));
         }
@@ -100,7 +100,7 @@ namespace Microsoft.Extensions.Options.Tests
             });
 
             var sp = services.BuildServiceProvider();
-            var option = sp.GetRequiredService<IOptionsFactory<FakeOptions>>();
+            var option = sp.GetRequiredService<IOptionsService<FakeOptions>>();
             Assert.Equal("NotDefault", option.Get("NotDefault").Message);
             Assert.Equal("Default", option.Get("Default").Message);
             Assert.Throws<ArgumentNullException>(() => option.Get("Throws"));
@@ -119,7 +119,7 @@ namespace Microsoft.Extensions.Options.Tests
             services.Configure<FakeOptions>("-", o => o.Message += "-");
 
             var sp = services.BuildServiceProvider();
-            var option = sp.GetRequiredService<IOptionsFactory<FakeOptions>>();
+            var option = sp.GetRequiredService<IOptionsService<FakeOptions>>();
             Assert.Equal("ABC", option.Get("1").Message);
             Assert.Equal("A+BC+", option.Get("+").Message);
             Assert.Equal("-ABC-", option.Get("-").Message);
@@ -138,7 +138,7 @@ namespace Microsoft.Extensions.Options.Tests
             services.Validate<FakeOptions>("-", o => o.Message += "-");
 
             var sp = services.BuildServiceProvider();
-            var option = sp.GetRequiredService<IOptionsFactory<FakeOptions>>();
+            var option = sp.GetRequiredService<IOptionsService<FakeOptions>>();
             Assert.Equal("ABC", option.Get("1").Message);
             Assert.Equal("A+BC+", option.Get("+").Message);
             Assert.Equal("-ABC-", option.Get("-").Message);

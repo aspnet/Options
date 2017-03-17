@@ -4,14 +4,18 @@
 namespace Microsoft.Extensions.Options
 {
     /// <summary>
-    /// Used to create TOptions instances.
+    /// Used to retreive configured and validated TOptions instances.
     /// </summary>
     /// <typeparam name="TOptions">The type of options being requested.</typeparam>
-    public interface IOptionsFactory<TOptions> where TOptions : class, new()
+    public interface IOptionsService<TOptions> where TOptions : class, new()
     {
         /// <summary>
-        /// Returns a configured TOptions instance with the given name.
+        /// Returns a configured and validated TOptions instance with the given name.
         /// </summary>
-        TOptions Create(string name);
+        TOptions Get(string name);
+
+        void Add(string name, TOptions options);
+
+        bool Remove(string name);
     }
 }

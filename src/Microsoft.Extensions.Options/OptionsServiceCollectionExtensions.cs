@@ -27,7 +27,10 @@ namespace Microsoft.Extensions.DependencyInjection
             services.TryAdd(ServiceDescriptor.Singleton(typeof(IOptions<>), typeof(OptionsManager<>)));
             services.TryAdd(ServiceDescriptor.Scoped(typeof(IOptionsSnapshot<>), typeof(OptionsManager<>)));
             services.TryAdd(ServiceDescriptor.Singleton(typeof(IOptionsMonitor<>), typeof(OptionsMonitor<>)));
-            services.TryAdd(ServiceDescriptor.Singleton(typeof(IOptionsFactory<>), typeof(OptionsFactory<>)));
+            services.TryAdd(ServiceDescriptor.Transient(typeof(IOptionsService<>), typeof(OptionsService<>)));
+            services.TryAdd(ServiceDescriptor.Transient(typeof(IOptionsFactory<>), typeof(OptionsFactory<>)));
+            services.TryAdd(ServiceDescriptor.Transient(typeof(IOptionsValidator<>), typeof(OptionsValidator<>)));
+            services.TryAdd(ServiceDescriptor.Singleton(typeof(IOptionsCache<>), typeof(OptionsCache<>)));
             return services;
         }
 
