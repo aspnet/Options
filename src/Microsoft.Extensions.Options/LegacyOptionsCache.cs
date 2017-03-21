@@ -28,7 +28,7 @@ namespace Microsoft.Extensions.Options
             {
                 foreach (var setup in _setups)
                 {
-                    setup.Configure(result);
+                    setup.Configure(string.Empty, result);
                 }
             }
             return result;

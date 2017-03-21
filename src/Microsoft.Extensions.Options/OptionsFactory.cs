@@ -11,13 +11,13 @@ namespace Microsoft.Extensions.Options
     /// <typeparam name="TOptions">The type of options being requested.</typeparam>
     public class OptionsFactory<TOptions> : IOptionsFactory<TOptions> where TOptions : class, new()
     {
-        private readonly IEnumerable<IConfigureNamedOptions<TOptions>> _setups;
+        private readonly IEnumerable<IConfigureOptions<TOptions>> _setups;
 
         /// <summary>
         /// Initializes a new instance with the specified options configurations.
         /// </summary>
         /// <param name="setups">The configuration actions to run.</param>
-        public OptionsFactory(IEnumerable<IConfigureNamedOptions<TOptions>> setups)
+        public OptionsFactory(IEnumerable<IConfigureOptions<TOptions>> setups)
         {
             _setups = setups;
         }

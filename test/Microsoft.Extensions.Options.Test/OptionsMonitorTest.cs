@@ -22,7 +22,7 @@ namespace Microsoft.Extensions.Options.Tests
                 _test = test;
             }
 
-            public void Configure(FakeOptions options)
+            public void Configure(string name, FakeOptions options)
             {
                 _test.SetupInvokeCount++;
                 options.Message += _test.SetupInvokeCount;

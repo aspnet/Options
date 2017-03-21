@@ -14,16 +14,18 @@ namespace Microsoft.Extensions.Options
         /// <summary>
         /// Constructor.
         /// </summary>
+        /// <param name="name">The name of the options.</param>
         /// <param name="action">The action to register.</param>
-        public ConfigureOptions(Action<TOptions> action)
+        public ConfigureOptions(string name, Action<TOptions> action)
         {
-            if (action == null)
-            {
-                throw new ArgumentNullException(nameof(action));
-            }
-
+            Name = name;
             Action = action;
         }
+
+        /// <summary>
+        /// The options name.
+        /// </summary>
+        public string Name { get; }
 
         /// <summary>
         /// The configuration action.
@@ -31,17 +33,22 @@ namespace Microsoft.Extensions.Options
         public Action<TOptions> Action { get; }
 
         /// <summary>
-        /// Invokes the registered configure Action.
+        /// Invokes the registered configure Action if the name matches.
         /// </summary>
+        /// <param name="name"></param>
         /// <param name="options"></param>
-        public virtual void Configure(TOptions options)
+        public virtual void Configure(string name, TOptions options)
         {
             if (options == null)
             {
                 throw new ArgumentNullException(nameof(options));
             }
 
-            Action.Invoke(options);
+            // Null name is used to configure all named options.
+            if (Name == null || name == Name)
+            {
+                Action?.Invoke(options);
+            }
         }
     }
 }
