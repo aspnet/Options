@@ -7,7 +7,7 @@ using Xunit;
 
 namespace Microsoft.Extensions.Options.Tests
 {
-    public class OptionsFactoryTest
+    public class OptionsManagerTest
     {
         [Fact]
         public void CanResolveNamedOptions()
@@ -24,7 +24,7 @@ namespace Microsoft.Extensions.Options.Tests
             });
 
             var sp = services.BuildServiceProvider();
-            var option = sp.GetRequiredService<IOptions<FakeOptions>>();
+            var option = sp.GetRequiredService<IOptionsManager<FakeOptions>>();
             Assert.Equal("one", option.Get("1").Message);
             Assert.Equal("two", option.Get("2").Message);
         }
@@ -36,7 +36,7 @@ namespace Microsoft.Extensions.Options.Tests
             services.ConfigureAll<FakeOptions>(o => o.Message = "Default");
 
             var sp = services.BuildServiceProvider();
-            var option = sp.GetRequiredService<IOptions<FakeOptions>>();
+            var option = sp.GetRequiredService<IOptionsManager<FakeOptions>>();
             Assert.Equal("Default", option.Get("1").Message);
             Assert.Equal("Default", option.Get("2").Message);
         }
@@ -54,7 +54,7 @@ namespace Microsoft.Extensions.Options.Tests
             services.Configure<FakeOptions>("-", o => o.Message += "-");
 
             var sp = services.BuildServiceProvider();
-            var option = sp.GetRequiredService<IOptions<FakeOptions>>();
+            var option = sp.GetRequiredService<IOptionsManager<FakeOptions>>();
             Assert.Equal("ABC", option.Get("1").Message);
             Assert.Equal("A+BC+", option.Get("+").Message);
             Assert.Equal("-ABC-", option.Get("-").Message);

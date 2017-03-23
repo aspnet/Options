@@ -19,7 +19,7 @@ namespace Microsoft.Extensions.Options
         /// <param name="name">The name of the options instance.</param>
         /// <param name="config">The IConfiguration instance.</param>
         public ConfigureFromConfigurationOptions(string name, IConfiguration config)
-            : base(name, options => ConfigurationBinder.Bind(config, options))
+            : base(options => ConfigurationBinder.Bind(config, options))
         {
             if (config == null)
             {

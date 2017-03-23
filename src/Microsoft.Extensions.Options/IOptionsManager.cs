@@ -7,11 +7,11 @@ namespace Microsoft.Extensions.Options
     /// Used to retreive configured TOptions instances.
     /// </summary>
     /// <typeparam name="TOptions">The type of options being requested.</typeparam>
-    public interface IOptions<TOptions> where TOptions : class, new()
+    public interface IOptionsManager<TOptions> : IOptions<TOptions> where TOptions : class, new()
     {
         /// <summary>
-        /// The default configured TOptions instance, equivalent to Get(string.Empty).
+        /// Returns a configured TOptions instance with the given name.
         /// </summary>
-        TOptions Value { get; }
+        TOptions Get(string name);
     }
 }

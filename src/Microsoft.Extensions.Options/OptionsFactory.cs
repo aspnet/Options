@@ -27,7 +27,14 @@ namespace Microsoft.Extensions.Options
             var options = new TOptions();
             foreach (var setup in _setups)
             {
-                setup.Configure(name, options);
+                if (setup is IConfigureNamedOptions<TOptions> namedSetup)
+                {
+                    namedSetup.Configure(name, options);
+                }
+                else
+                {
+                    setup.Configure(options);
+                }
             }
             return options;
         }

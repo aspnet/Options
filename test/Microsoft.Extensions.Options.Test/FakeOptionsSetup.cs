@@ -5,21 +5,21 @@ namespace Microsoft.Extensions.Options.Tests
 {
     public class FakeOptionsSetupA : ConfigureOptions<FakeOptions>
     {
-        public FakeOptionsSetupA() : base(string.Empty, o => o.Message += "A")
+        public FakeOptionsSetupA() : base(o => o.Message += "A")
         {
         }
     }
 
     public class FakeOptionsSetupB : ConfigureOptions<FakeOptions>
     {
-        public FakeOptionsSetupB() : base(string.Empty, o => o.Message += "B")
+        public FakeOptionsSetupB() : base(o => o.Message += "B")
         {
         }
     }
 
     public class FakeOptionsSetupC : ConfigureOptions<FakeOptions>
     {
-        public FakeOptionsSetupC() : base(string.Empty, o => o.Message += "C")
+        public FakeOptionsSetupC() : base(o => o.Message += "C")
         {
         }
     }
