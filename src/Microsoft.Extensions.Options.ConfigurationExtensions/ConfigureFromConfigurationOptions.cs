@@ -10,7 +10,7 @@ namespace Microsoft.Extensions.Options
     /// Configures an option instance by using ConfigurationBinder.Bind against an IConfiguration.
     /// </summary>
     /// <typeparam name="TOptions">The type of options to bind.</typeparam>
-    public class ConfigureFromConfigurationOptions<TOptions> : ConfigureOptions<TOptions>
+    public class ConfigureFromConfigurationOptions<TOptions> : ConfigureNamedOptions<TOptions>
         where TOptions : class
     {
         /// <summary>
@@ -19,7 +19,7 @@ namespace Microsoft.Extensions.Options
         /// <param name="name">The name of the options instance.</param>
         /// <param name="config">The IConfiguration instance.</param>
         public ConfigureFromConfigurationOptions(string name, IConfiguration config)
-            : base(options => ConfigurationBinder.Bind(config, options))
+            : base(name, options => ConfigurationBinder.Bind(config, options))
         {
             if (config == null)
             {
