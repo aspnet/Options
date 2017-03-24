@@ -24,11 +24,10 @@ namespace Microsoft.Extensions.DependencyInjection
                 throw new ArgumentNullException(nameof(services));
             }
 
-            services.TryAdd(ServiceDescriptor.Scoped(typeof(IOptionsSnapshot<>), typeof(OptionsManager<>)));
+            services.TryAdd(ServiceDescriptor.Scoped(typeof(IOptionsSnapshot<>), typeof(OptionsSnapshot<>)));
             services.TryAdd(ServiceDescriptor.Singleton(typeof(IOptionsMonitor<>), typeof(OptionsMonitor<>)));
-            services.TryAdd(ServiceDescriptor.Transient(typeof(IOptions<>), typeof(OptionsManager<>)));
-            services.TryAdd(ServiceDescriptor.Transient(typeof(IOptionsManager<>), typeof(OptionsManager<>)));
-            services.TryAdd(ServiceDescriptor.Transient(typeof(IOptionsFactory<>), typeof(OptionsFactory<>)));
+            services.TryAdd(ServiceDescriptor.Scoped(typeof(IOptions<>), typeof(OptionsManager<>)));
+            services.TryAdd(ServiceDescriptor.Scoped(typeof(IOptionsFactory<>), typeof(OptionsFactory<>)));
             services.TryAdd(ServiceDescriptor.Singleton(typeof(IOptionsCache<>), typeof(OptionsCache<>)));
             return services;
         }
