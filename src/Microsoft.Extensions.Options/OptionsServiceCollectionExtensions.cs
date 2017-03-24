@@ -40,7 +40,7 @@ namespace Microsoft.Extensions.DependencyInjection
         /// <param name="configureOptions">The action used to configure the options.</param>
         /// <returns>The <see cref="IServiceCollection"/> so that additional calls can be chained.</returns>
         public static IServiceCollection Configure<TOptions>(this IServiceCollection services, Action<TOptions> configureOptions) where TOptions : class
-            => services.Configure(string.Empty, configureOptions);
+            => services.Configure(Options.Options.DefaultName, configureOptions);
 
         /// <summary>
         /// Registers an action used to configure a particular type of options.

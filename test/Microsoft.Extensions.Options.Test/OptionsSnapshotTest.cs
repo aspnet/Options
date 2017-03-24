@@ -195,5 +195,19 @@ namespace Microsoft.Extensions.Options.Tests
             Assert.Equal("-ABC-", option.Get("-").Message);
         }
 
+        [Fact]
+        public void CanConfigureAllDefaultAndNamedOptions()
+        {
+            var services = new ServiceCollection().AddOptions();
+            services.ConfigureAll<FakeOptions>(o => o.Message += "Default");
+            services.Configure<FakeOptions>(o => o.Message += "0");
+            services.Configure<FakeOptions>("1", o => o.Message += "1");
+
+            var sp = services.BuildServiceProvider();
+            var option = sp.GetRequiredService<IOptionsSnapshot<FakeOptions>>();
+            Assert.Equal("Default", option.Get("Default").Message);
+            Assert.Equal("Default0", option.Value.Message);
+            Assert.Equal("Default1", option.Get("1").Message);
+        }
     }
 }

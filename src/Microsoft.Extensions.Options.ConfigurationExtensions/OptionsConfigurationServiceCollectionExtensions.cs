@@ -20,7 +20,7 @@ namespace Microsoft.Extensions.DependencyInjection
         /// <param name="config">The configuration being bound.</param>
         /// <returns>The <see cref="IServiceCollection"/> so that additional calls can be chained.</returns>
         public static IServiceCollection Configure<TOptions>(this IServiceCollection services, IConfiguration config) where TOptions : class
-            => services.Configure<TOptions>(string.Empty, config);
+            => services.Configure<TOptions>(Options.Options.DefaultName, config);
 
         /// <summary>
         /// Registers a configuration instance which TOptions will bind against.
