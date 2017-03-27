@@ -3,11 +3,13 @@
 
 using System;
 using System.Collections.Concurrent;
+using System.Collections.Generic;
+using Microsoft.Extensions.Primitives;
 
 namespace Microsoft.Extensions.Options
 {
     /// <summary>
-    /// Implementation of IOptionsFactory.
+    /// Implementation of IOptionsSnapshot.
     /// </summary>
     /// <typeparam name="TOptions">The type of options being requested.</typeparam>
     public class OptionsSnapshot<TOptions> : IOptionsSnapshot<TOptions> where TOptions : class, new()
@@ -21,10 +23,18 @@ namespace Microsoft.Extensions.Options
         /// </summary>
         /// <param name="cache">The cache to use.</param>
         /// <param name="factory">The factory to use to create options.</param>
-        public OptionsSnapshot(IOptionsCache<TOptions> cache, IOptionsFactory<TOptions> factory)
+        /// <param name="changeSources">The change token sources used to detect options changes.</param>
+        public OptionsSnapshot(IOptionsCache<TOptions> cache, IOptionsFactory<TOptions> factory, IEnumerable<IOptionsChangeTokenSource<TOptions>> changeSources)
         {
             _cache = cache;
             _factory = factory;
+
+            foreach (var source in changeSources)
+            {
+                ChangeToken.OnChange(
+                    () => source.GetChangeToken(),
+                    () => ClearCache(source.Name));
+            }
         }
 
         public TOptions Value
@@ -33,6 +43,16 @@ namespace Microsoft.Extensions.Options
             {
                 return Get(Options.DefaultName);
             }
+        }
+
+        private void ClearCache(string name)
+        {
+            // Default to 
+            if (string.IsNullOrEmpty(name))
+            {
+                name = Options.DefaultName;
+            }
+            _cache.TryRemove(name);
         }
 
         private TOptions GetOrAddCache(string name)

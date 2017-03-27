@@ -39,6 +39,8 @@ namespace Microsoft.Extensions.Options.Tests
 
             public FakeChangeToken Token { get; set; }
 
+            public string Name { get; }
+
             public IChangeToken GetChangeToken()
             {
                 return Token;
@@ -64,7 +66,7 @@ namespace Microsoft.Extensions.Options.Tests
         }
 
         [Fact]
-        public void SnapshotOptionsDoNotChangeEvenWhenMonitorChanges()
+        public void SnapshotDoesNotChangeUntilNextRequestOnConfigChanges()
         {
             var config = new ConfigurationBuilder().AddInMemoryCollection().Build();
 
@@ -74,27 +76,22 @@ namespace Microsoft.Extensions.Options.Tests
 
             var sp = services.BuildServiceProvider();
 
-            var monitor = sp.GetRequiredService<IOptionsMonitor<FakeOptions>>();
-            var snapshot = sp.GetRequiredService<IOptionsSnapshot<FakeOptions>>();
+            // Snapshot only updated once per scope
+            using (var scope = sp.CreateScope())
+            {
+                var snapshot = scope.ServiceProvider.GetRequiredService<IOptionsSnapshot<FakeOptions>>();
+                Assert.Equal("1", snapshot.Value.Message);
+                config.Reload();
+                Assert.Equal("1", snapshot.Value.Message);
+            }
 
-            var options = monitor.CurrentValue;
-            Assert.Equal("1", options.Message);
-            Assert.Equal("2", snapshot.Value.Message);
-            Assert.NotEqual(options, snapshot.Value);
-
-            var token = config.GetReloadToken();
-
-            config.Reload();
-
-            Assert.NotEqual(monitor.CurrentValue, snapshot.Value);
-            Assert.Equal("3", monitor.CurrentValue.Message);
-            Assert.Equal("2", snapshot.Value.Message);
-
-            config.Reload();
-
-            Assert.NotEqual(monitor.CurrentValue, snapshot.Value);
-            Assert.Equal("4", monitor.CurrentValue.Message);
-            Assert.Equal("2", snapshot.Value.Message);
+            using (var scope = sp.CreateScope())
+            {
+                var snapshot = scope.ServiceProvider.GetRequiredService<IOptionsSnapshot<FakeOptions>>();
+                Assert.Equal("2", snapshot.Value.Message);
+                config.Reload();
+                Assert.Equal("2", snapshot.Value.Message);
+            }
         }
 
         private class TestConfigure : IConfigureOptions<FakeOptions>
