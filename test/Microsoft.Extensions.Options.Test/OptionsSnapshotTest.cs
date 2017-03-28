@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Linq;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Primitives;
@@ -162,7 +163,7 @@ namespace Microsoft.Extensions.Options.Tests
         }
 
         [Fact]
-        public void FactoryCanConfigureAllOptions()
+        public void CanConfigureAllOptions()
         {
             var services = new ServiceCollection().AddOptions();
             services.ConfigureAll<FakeOptions>(o => o.Message = "Default");
@@ -205,6 +206,22 @@ namespace Microsoft.Extensions.Options.Tests
             Assert.Equal("Default", option.Get("Default").Message);
             Assert.Equal("Default0", option.Value.Message);
             Assert.Equal("Default1", option.Get("1").Message);
+        }
+
+        [Fact]
+        public void EnsureAddOptionsLifetimes()
+        {
+            var services = new ServiceCollection().AddOptions();
+            CheckLifetime(services, typeof(IOptions<>), ServiceLifetime.Singleton);
+            CheckLifetime(services, typeof(IOptionsMonitor<>), ServiceLifetime.Singleton);
+            CheckLifetime(services, typeof(IOptionsSnapshot<>), ServiceLifetime.Scoped);
+            CheckLifetime(services, typeof(IOptionsCache<>), ServiceLifetime.Singleton);
+            CheckLifetime(services, typeof(IOptionsFactory<>), ServiceLifetime.Transient);
+        }
+
+        private void CheckLifetime(IServiceCollection services, Type serviceType, ServiceLifetime lifetime)
+        {
+            Assert.NotNull(services.Where(s => s.ServiceType == serviceType && s.Lifetime == lifetime).SingleOrDefault());
         }
     }
 }
