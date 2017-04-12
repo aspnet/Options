@@ -13,7 +13,7 @@ namespace Microsoft.Extensions.Options
         private object _cacheLock = new object();
         private bool _cacheInitialized;
         private TOptions _options;
-        private IEnumerable<IConfigureOptions<TOptions>> _setups;
+        private readonly IEnumerable<IConfigureOptions<TOptions>> _setups;
 
         public LegacyOptionsCache(IEnumerable<IConfigureOptions<TOptions>> setups)
         {
@@ -34,16 +34,6 @@ namespace Microsoft.Extensions.Options
             return result;
         }
 
-        public virtual TOptions Value
-        {
-            get
-            {
-                return LazyInitializer.EnsureInitialized(
-                    ref _options,
-                    ref _cacheInitialized,
-                    ref _cacheLock,
-                    _createCache);
-            }
-        }
+        public virtual TOptions Value => LazyInitializer.EnsureInitialized(ref _options, ref _cacheInitialized, ref _cacheLock, _createCache);
     }
 }

@@ -7,7 +7,7 @@ namespace Microsoft.Extensions.Options
     /// Used to create TOptions instances.
     /// </summary>
     /// <typeparam name="TOptions">The type of options being requested.</typeparam>
-    public interface IOptionsFactory<TOptions> where TOptions : class, new()
+    public interface IOptionsFactory<out TOptions> where TOptions : class, new()
     {
         /// <summary>
         /// Returns a configured TOptions instance with the given name.

@@ -32,18 +32,12 @@ namespace Microsoft.Extensions.Options
             foreach (var source in changeSources)
             {
                 ChangeToken.OnChange(
-                    () => source.GetChangeToken(),
+                    source.GetChangeToken,
                     () => ClearCache(source.Name));
             }
         }
 
-        public TOptions Value
-        {
-            get
-            {
-                return Get(Options.DefaultName);
-            }
-        }
+        public TOptions Value => Get(Options.DefaultName);
 
         private void ClearCache(string name)
         {

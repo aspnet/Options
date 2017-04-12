@@ -11,7 +11,7 @@ namespace Microsoft.Extensions.Options
     /// <typeparam name="TOptions"></typeparam>
     public class OptionsManager<TOptions> : IOptions<TOptions> where TOptions : class, new()
     {
-        private LegacyOptionsCache<TOptions> _optionsCache;
+        private readonly LegacyOptionsCache<TOptions> _optionsCache;
 
         /// <summary>
         /// Initializes a new instance with the specified options configurations.
@@ -25,12 +25,6 @@ namespace Microsoft.Extensions.Options
         /// <summary>
         /// The configured options instance.
         /// </summary>
-        public virtual TOptions Value
-        {
-            get
-            {
-                return _optionsCache.Value;
-            }
-        }
+        public virtual TOptions Value => _optionsCache.Value;
     }
 }

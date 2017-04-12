@@ -15,8 +15,7 @@ namespace Microsoft.Extensions.Options
     {
         private LegacyOptionsCache<TOptions> _optionsCache;
         private readonly IEnumerable<IConfigureOptions<TOptions>> _setups;
-        private readonly IEnumerable<IOptionsChangeTokenSource<TOptions>> _sources;
-        private List<Action<TOptions>> _listeners = new List<Action<TOptions>>();
+        private readonly List<Action<TOptions>> _listeners = new List<Action<TOptions>>();
 
         /// <summary>
         /// Constructor.
@@ -25,15 +24,14 @@ namespace Microsoft.Extensions.Options
         /// <param name="sources">The sources used to listen for changes to the options instance.</param>
         public OptionsMonitor(IEnumerable<IConfigureOptions<TOptions>> setups, IEnumerable<IOptionsChangeTokenSource<TOptions>> sources)
         {
-            _sources = sources;
             _setups = setups;
-            _optionsCache = new LegacyOptionsCache<TOptions>(setups);
+            _optionsCache = new LegacyOptionsCache<TOptions>(_setups);
 
-            foreach (var source in _sources)
+            foreach (var source in sources)
             {
                 ChangeToken.OnChange(
-                    () => source.GetChangeToken(),
-                    () => InvokeChanged());
+                    source.GetChangeToken,
+                    InvokeChanged);
             }
         }
 
@@ -49,13 +47,7 @@ namespace Microsoft.Extensions.Options
         /// <summary>
         /// The present value of the options.
         /// </summary>
-        public TOptions CurrentValue
-        {
-            get
-            {
-                return _optionsCache.Value;
-            }
-        }
+        public TOptions CurrentValue => _optionsCache.Value;
 
         /// <summary>
         /// Registers a listener to be called whenever TOptions changes.
