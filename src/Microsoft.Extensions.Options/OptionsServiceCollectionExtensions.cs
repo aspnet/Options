@@ -69,5 +69,43 @@ namespace Microsoft.Extensions.DependencyInjection
 
         public static IServiceCollection ConfigureAll<TOptions>(this IServiceCollection services, Action<TOptions> configureOptions) where TOptions : class
             => services.Configure(name: null, configureOptions: configureOptions);
+
+        /// <summary>
+        /// Registers an action used to Initialize a particular type of options.
+        /// </summary>
+        /// <typeparam name="TOptions">The options type to be Initialized.</typeparam>
+        /// <param name="services">The <see cref="IServiceCollection"/> to add the services to.</param>
+        /// <param name="InitializeOptions">The action used to Initialize the options.</param>
+        /// <returns>The <see cref="IServiceCollection"/> so that additional calls can be chained.</returns>
+        public static IServiceCollection Initialize<TOptions>(this IServiceCollection services, Action<TOptions> InitializeOptions) where TOptions : class
+            => services.Initialize(Options.Options.DefaultName, InitializeOptions);
+
+        /// <summary>
+        /// Registers an action used to Initialize a particular type of options.
+        /// </summary>
+        /// <typeparam name="TOptions">The options type to be Initialized.</typeparam>
+        /// <param name="services">The <see cref="IServiceCollection"/> to add the services to.</param>
+        /// <param name="name">The name of the options instance.</param>
+        /// <param name="InitializeOptions">The action used to Initialize the options.</param>
+        /// <returns>The <see cref="IServiceCollection"/> so that additional calls can be chained.</returns>
+        public static IServiceCollection Initialize<TOptions>(this IServiceCollection services, string name, Action<TOptions> InitializeOptions)
+            where TOptions : class
+        {
+            if (services == null)
+            {
+                throw new ArgumentNullException(nameof(services));
+            }
+
+            if (InitializeOptions == null)
+            {
+                throw new ArgumentNullException(nameof(InitializeOptions));
+            }
+
+            services.AddSingleton<IInitializeOptions<TOptions>>(new InitializeOptions<TOptions>(name, InitializeOptions));
+            return services;
+        }
+
+        public static IServiceCollection InitializeAll<TOptions>(this IServiceCollection services, Action<TOptions> InitializeOptions) where TOptions : class
+            => services.Initialize(name: null, InitializeOptions: InitializeOptions);
     }
 }
