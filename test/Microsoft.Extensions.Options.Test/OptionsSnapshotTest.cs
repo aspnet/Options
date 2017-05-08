@@ -288,6 +288,28 @@ namespace Microsoft.Extensions.Options.Tests
         }
 
         [Fact]
+        public void CustomIConfigureOptionsShouldOnlyAffectDefaultInstance()
+        {
+            var services = new ServiceCollection().AddOptions();
+            services.AddSingleton<IConfigureOptions<FakeOptions>, CustomSetup>();
+
+            var sp = services.BuildServiceProvider();
+            var option = sp.GetRequiredService<IOptionsSnapshot<FakeOptions>>();
+            Assert.Equal("", option.Get("NotDefault").Message);
+            Assert.Equal("Stomp", option.Get(Options.DefaultName).Message);
+            Assert.Equal("Stomp", option.Value.Message);
+            Assert.Equal("Stomp", sp.GetRequiredService<IOptions<FakeOptions>>().Value.Message);
+        }
+
+        private class CustomSetup : IConfigureOptions<FakeOptions>
+        {
+            public void Configure(FakeOptions options)
+            {
+                options.Message = "Stomp";
+            }
+        }
+
+        [Fact]
         public void EnsureAddOptionsLifetimes()
         {
             var services = new ServiceCollection().AddOptions();

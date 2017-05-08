@@ -34,7 +34,7 @@ namespace Microsoft.Extensions.Options
                 {
                     namedSetup.Configure(name, options);
                 }
-                else
+                else if (name == Options.DefaultName)
                 {
                     setup.Configure(options);
                 }

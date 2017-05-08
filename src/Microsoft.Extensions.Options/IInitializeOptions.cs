@@ -5,6 +5,7 @@ namespace Microsoft.Extensions.Options
 {
     /// <summary>
     /// Represents something that initializes the TOptions type.
+    /// Note: These are run after all <see cref="IConfigureOptions{TOptions}"/>.
     /// </summary>
     /// <typeparam name="TOptions"></typeparam>
     public interface IInitializeOptions<in TOptions> where TOptions : class
