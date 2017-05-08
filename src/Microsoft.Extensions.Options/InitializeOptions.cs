@@ -6,13 +6,13 @@ using System;
 namespace Microsoft.Extensions.Options
 {
     /// <summary>
-    /// Implementation of IInitializeNamedOptions.
+    /// Implementation of <see cref="IInitializeOptions{TOptions}"/>.
     /// </summary>
     /// <typeparam name="TOptions"></typeparam>
     public class InitializeOptions<TOptions> : IInitializeOptions<TOptions> where TOptions : class
     {
         /// <summary>
-        /// Constructor.
+        /// Creates a new instance of <see cref="InitializeOptions{TOptions}"/>.
         /// </summary>
         /// <param name="name">The name of the options.</param>
         /// <param name="action">The action to register.</param>
