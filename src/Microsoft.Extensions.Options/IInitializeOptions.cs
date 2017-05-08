@@ -11,10 +11,10 @@ namespace Microsoft.Extensions.Options
     public interface IInitializeOptions<in TOptions> where TOptions : class
     {
         /// <summary>
-        /// Invoked to Initialize a TOptions instance.
+        /// Invoked to initialize a TOptions instance.
         /// </summary>
         /// <param name="name">The name of the options instance being initialized.</param>
-        /// <param name="options">The options instance to Initialize.</param>
+        /// <param name="options">The options instance to initialize.</param>
         void Initialize(string name, TOptions options);
     }
 }

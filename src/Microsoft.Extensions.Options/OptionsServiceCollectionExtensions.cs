@@ -91,10 +91,10 @@ namespace Microsoft.Extensions.DependencyInjection
             => services.Initialize(Options.Options.DefaultName, initializeOptions);
 
         /// <summary>
-        /// Registers an action used to Initialize a particular type of options.
+        /// Registers an action used to initialize a particular type of options.
         /// Note: These are run after all <seealso cref="Configure{TOptions}(IServiceCollection, Action{TOptions})"/>.
         /// </summary>
-        /// <typeparam name="TOptions">The options type to be Initialized.</typeparam>
+        /// <typeparam name="TOptions">The options type to be initialized.</typeparam>
         /// <param name="services">The <see cref="IServiceCollection"/> to add the services to.</param>
         /// <param name="name">The name of the options instance.</param>
         /// <param name="initializeOptions">The action used to initialize the options.</param>

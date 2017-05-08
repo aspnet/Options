@@ -28,12 +28,12 @@ namespace Microsoft.Extensions.Options
         public string Name { get; }
 
         /// <summary>
-        /// The configuration action.
+        /// The initialization action.
         /// </summary>
         public Action<TOptions> Action { get; }
 
         /// <summary>
-        /// Invokes the registered Initialize Action if the name matches.
+        /// Invokes the registered initialization Action if the name matches.
         /// </summary>
         /// <param name="name"></param>
         /// <param name="options"></param>
@@ -44,7 +44,7 @@ namespace Microsoft.Extensions.Options
                 throw new ArgumentNullException(nameof(options));
             }
 
-            // Null name is used to Initialize all named options.
+            // Null name is used to initialize all named options.
             if (Name == null || name == Name)
             {
                 Action?.Invoke(options);
