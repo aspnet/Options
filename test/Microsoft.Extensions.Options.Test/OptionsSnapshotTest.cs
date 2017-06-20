@@ -95,18 +95,22 @@ namespace Microsoft.Extensions.Options.Tests
             }
         }
 
-        private class TestConfigure : IConfigureOptions<FakeOptions>
+        private class TestConfigure : IConfigureNamedOptions<FakeOptions>
         {
             public static int ConfigureCount;
+            public static int CtorCount;
 
             public TestConfigure()
+            {
+                CtorCount++;
+            }
+
+            public void Configure(string name, FakeOptions options)
             {
                 ConfigureCount++;
             }
 
-            public void Configure(FakeOptions options)
-            {
-            }
+            public void Configure(FakeOptions options) => Configure(Options.DefaultName, options);
         }
 
 
@@ -126,20 +130,22 @@ namespace Microsoft.Extensions.Options.Tests
             {
                 options = scope.ServiceProvider.GetRequiredService<IOptionsSnapshot<FakeOptions>>().Value;
                 Assert.Equal(options, scope.ServiceProvider.GetRequiredService<IOptionsSnapshot<FakeOptions>>().Value);
+                Assert.Equal(1, TestConfigure.ConfigureCount);
                 namedOne = scope.ServiceProvider.GetRequiredService<IOptionsSnapshot<FakeOptions>>().Get("1");
                 Assert.Equal(namedOne, scope.ServiceProvider.GetRequiredService<IOptionsSnapshot<FakeOptions>>().Get("1"));
+                Assert.Equal(2, TestConfigure.ConfigureCount);
             }
-            Assert.Equal(1, TestConfigure.ConfigureCount);
-            Assert.True(cache.TryRemove(Options.DefaultName));
-            Assert.True(cache.TryRemove("1"));
+            Assert.Equal(1, TestConfigure.CtorCount);
             using (var scope = factory.CreateScope())
             {
                 var options2 = scope.ServiceProvider.GetRequiredService<IOptionsSnapshot<FakeOptions>>().Value;
                 Assert.NotEqual(options, options2);
+                Assert.Equal(3, TestConfigure.ConfigureCount);
                 var namedOne2 = scope.ServiceProvider.GetRequiredService<IOptionsSnapshot<FakeOptions>>().Get("1");
                 Assert.NotEqual(namedOne2, namedOne);
+                Assert.Equal(4, TestConfigure.ConfigureCount);
             }
-            Assert.Equal(2, TestConfigure.ConfigureCount);
+            Assert.Equal(2, TestConfigure.CtorCount);
         }
 
         [Fact]
@@ -206,6 +212,107 @@ namespace Microsoft.Extensions.Options.Tests
             Assert.Equal("Default", option.Get("Default").Message);
             Assert.Equal("Default0", option.Value.Message);
             Assert.Equal("Default1", option.Get("1").Message);
+        }
+
+        [Fact]
+        public void CanConfigureAndPostConfigureAllDefaultAndNamedOptions()
+        {
+            var services = new ServiceCollection().AddOptions();
+            services.ConfigureAll<FakeOptions>(o => o.Message += "Default");
+            services.Configure<FakeOptions>(o => o.Message += "0");
+            services.Configure<FakeOptions>("1", o => o.Message += "1");
+            services.PostConfigureAll<FakeOptions>(o => o.Message += "PostConfigure");
+            services.PostConfigure<FakeOptions>(o => o.Message += "2");
+            services.PostConfigure<FakeOptions>("1", o => o.Message += "3");
+
+            var sp = services.BuildServiceProvider();
+            var option = sp.GetRequiredService<IOptionsSnapshot<FakeOptions>>();
+            Assert.Equal("DefaultPostConfigure", option.Get("Default").Message);
+            Assert.Equal("Default0PostConfigure2", option.Value.Message);
+            Assert.Equal("Default1PostConfigure3", option.Get("1").Message);
+        }
+
+        [Fact]
+        public void CanPostConfigureAllOptions()
+        {
+            var services = new ServiceCollection().AddOptions();
+            services.PostConfigureAll<FakeOptions>(o => o.Message = "Default");
+
+            var sp = services.BuildServiceProvider();
+            var option = sp.GetRequiredService<IOptionsSnapshot<FakeOptions>>();
+            Assert.Equal("Default", option.Get("1").Message);
+            Assert.Equal("Default", option.Get("2").Message);
+        }
+
+        [Fact]
+        public void CanConfigureAndPostConfigureAllOptions()
+        {
+            var services = new ServiceCollection().AddOptions();
+            services.ConfigureAll<FakeOptions>(o => o.Message = "D");
+            services.PostConfigureAll<FakeOptions>(o => o.Message += "f");
+            services.ConfigureAll<FakeOptions>(o => o.Message += "e");
+            services.PostConfigureAll<FakeOptions>(o => o.Message += "ault");
+
+            var sp = services.BuildServiceProvider();
+            var option = sp.GetRequiredService<IOptionsSnapshot<FakeOptions>>();
+            Assert.Equal("Default", option.Get("1").Message);
+            Assert.Equal("Default", option.Get("2").Message);
+        }
+
+        [Fact]
+        public void NamedSnapshotsPostConfiguresInRegistrationOrder()
+        {
+            var services = new ServiceCollection().AddOptions();
+            services.PostConfigure<FakeOptions>("-", o => o.Message += "-");
+            services.PostConfigureAll<FakeOptions>(o => o.Message += "A");
+            services.PostConfigure<FakeOptions>("+", o => o.Message += "+");
+            services.PostConfigureAll<FakeOptions>(o => o.Message += "B");
+            services.PostConfigureAll<FakeOptions>(o => o.Message += "C");
+            services.PostConfigure<FakeOptions>("+", o => o.Message += "+");
+            services.PostConfigure<FakeOptions>("-", o => o.Message += "-");
+
+            var sp = services.BuildServiceProvider();
+            var option = sp.GetRequiredService<IOptionsSnapshot<FakeOptions>>();
+            Assert.Equal("ABC", option.Get("1").Message);
+            Assert.Equal("A+BC+", option.Get("+").Message);
+            Assert.Equal("-ABC-", option.Get("-").Message);
+        }
+
+        [Fact]
+        public void CanPostConfigureAllDefaultAndNamedOptions()
+        {
+            var services = new ServiceCollection().AddOptions();
+            services.PostConfigureAll<FakeOptions>(o => o.Message += "Default");
+            services.PostConfigure<FakeOptions>(o => o.Message += "0");
+            services.PostConfigure<FakeOptions>("1", o => o.Message += "1");
+
+            var sp = services.BuildServiceProvider();
+            var option = sp.GetRequiredService<IOptionsSnapshot<FakeOptions>>();
+            Assert.Equal("Default", option.Get("Default").Message);
+            Assert.Equal("Default0", option.Value.Message);
+            Assert.Equal("Default1", option.Get("1").Message);
+        }
+
+        [Fact]
+        public void CustomIConfigureOptionsShouldOnlyAffectDefaultInstance()
+        {
+            var services = new ServiceCollection().AddOptions();
+            services.AddSingleton<IConfigureOptions<FakeOptions>, CustomSetup>();
+
+            var sp = services.BuildServiceProvider();
+            var option = sp.GetRequiredService<IOptionsSnapshot<FakeOptions>>();
+            Assert.Equal("", option.Get("NotDefault").Message);
+            Assert.Equal("Stomp", option.Get(Options.DefaultName).Message);
+            Assert.Equal("Stomp", option.Value.Message);
+            Assert.Equal("Stomp", sp.GetRequiredService<IOptions<FakeOptions>>().Value.Message);
+        }
+
+        private class CustomSetup : IConfigureOptions<FakeOptions>
+        {
+            public void Configure(FakeOptions options)
+            {
+                options.Message = "Stomp";
+            }
         }
 
         [Fact]

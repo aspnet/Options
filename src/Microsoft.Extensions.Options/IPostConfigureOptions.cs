@@ -5,15 +5,16 @@ namespace Microsoft.Extensions.Options
 {
     /// <summary>
     /// Represents something that configures the TOptions type.
-    /// Note: These are run before all <see cref="IPostConfigureOptions{TOptions}"/>.
+    /// Note: These are run after all <see cref="IConfigureOptions{TOptions}"/>.
     /// </summary>
     /// <typeparam name="TOptions"></typeparam>
-    public interface IConfigureOptions<in TOptions> where TOptions : class
+    public interface IPostConfigureOptions<in TOptions> where TOptions : class
     {
         /// <summary>
         /// Invoked to configure a TOptions instance.
         /// </summary>
-        /// <param name="options">The options instance to configure.</param>
-        void Configure(TOptions options);
+        /// <param name="name">The name of the options instance being configured.</param>
+        /// <param name="options">The options instance to configured.</param>
+        void PostConfigure(string name, TOptions options);
     }
 }
