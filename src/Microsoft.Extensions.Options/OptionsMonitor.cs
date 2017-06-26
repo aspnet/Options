@@ -16,7 +16,7 @@ namespace Microsoft.Extensions.Options
         private readonly IOptionsMonitorCache<TOptions> _cache;
         private readonly IOptionsFactory<TOptions> _factory;
         private readonly IEnumerable<IOptionsChangeTokenSource<TOptions>> _sources;
-        internal event EventHandler<ChangeArgs> _onChange;
+        internal event Action<TOptions> _onChange;
 
         /// <summary>
         /// Constructor.
@@ -44,7 +44,7 @@ namespace Microsoft.Extensions.Options
             var options = CurrentValue;
             if (_onChange != null)
             {
-                _onChange.Invoke(this, new ChangeArgs(options));
+                _onChange.Invoke(options);
             }
         }
 
@@ -95,7 +95,7 @@ namespace Microsoft.Extensions.Options
                 _monitor = monitor;
             }
 
-            public void OnChange(object sender, ChangeArgs args) => _listener.Invoke(args.Options);
+            public void OnChange(TOptions options) => _listener.Invoke(options);
 
             public void Dispose() => _monitor._onChange -= OnChange;
         }
