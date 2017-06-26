@@ -1,7 +1,7 @@
-// Copyright (c) .NET Foundation. All rights reserved.
+﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using Microsoft.Extensions.Options.Factory;
+using System.Collections.Generic;
 
 namespace Microsoft.Extensions.Options
 {
@@ -9,22 +9,28 @@ namespace Microsoft.Extensions.Options
     /// Implementation of IOptions.
     /// </summary>
     /// <typeparam name="TOptions"></typeparam>
-    public class OptionsManager<TOptions> : IOptions<TOptions>, IOptionsSnapshot<TOptions> where TOptions : class, new()
+    public class OptionsManager<TOptions> : IOptions<TOptions> where TOptions : class, new()
     {
-        private readonly ICachedOptionsFactory<TOptions> _cachedOptionsFactory;
+        private LegacyOptionsCache<TOptions> _optionsCache;
 
         /// <summary>
         /// Initializes a new instance with the specified options configurations.
         /// </summary>
-        /// <param name="cachedOptionsFactory">The factory to instantiate an options instance.</param>
-        public OptionsManager(ICachedOptionsFactory<TOptions> cachedOptionsFactory)
+        /// <param name="setups">The configuration actions to run.</param>
+        public OptionsManager(IEnumerable<IConfigureOptions<TOptions>> setups)
         {
-            _cachedOptionsFactory = cachedOptionsFactory;
+            _optionsCache = new LegacyOptionsCache<TOptions>(setups);
         }
 
         /// <summary>
         /// The configured options instance.
         /// </summary>
-        public virtual TOptions Value => _cachedOptionsFactory.Get();
+        public virtual TOptions Value
+        {
+            get
+            {
+                return _optionsCache.Value;
+            }
+        }
     }
 }

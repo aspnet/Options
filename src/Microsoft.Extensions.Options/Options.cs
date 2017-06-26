@@ -8,6 +8,8 @@ namespace Microsoft.Extensions.Options
     /// </summary>
     public static class Options
     {
+        public static readonly string DefaultName = string.Empty;
+
         /// <summary>
         /// Creates a wrapper around an instance of TOptions to return itself as an IOptions.
         /// </summary>

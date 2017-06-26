@@ -6,6 +6,8 @@ using Microsoft.Extensions.Configuration;
 
 namespace Microsoft.Extensions.Options
 {
+    // REVIEW: consider deleting/obsoleting, not used by Configure anymore (in favor of name), left for breaking change)
+
     /// <summary>
     /// Configures an option instance by using ConfigurationBinder.Bind against an IConfiguration.
     /// </summary>
@@ -17,8 +19,8 @@ namespace Microsoft.Extensions.Options
         /// Constructor that takes the IConfiguration instance to bind against.
         /// </summary>
         /// <param name="config">The IConfiguration instance.</param>
-        public ConfigureFromConfigurationOptions(IConfiguration config)
-            : base(options => ConfigurationBinder.Bind(config, options))
+        public ConfigureFromConfigurationOptions(IConfiguration config) 
+            : base(config.Bind)
         {
             if (config == null)
             {

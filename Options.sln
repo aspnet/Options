@@ -8,8 +8,6 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.Extensions.Option
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.Extensions.Options", "src\Microsoft.Extensions.Options\Microsoft.Extensions.Options.csproj", "{BA4EF3CE-1829-4E0E-8281-BD503FF8A682}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.Extensions.Options.Validation", "src\Microsoft.Extensions.Options.Validation\Microsoft.Extensions.Options.Validation.csproj", "{E6D85629-71E2-46AF-8653-F618A86A6BA4}"
-EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU

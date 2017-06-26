@@ -1,4 +1,4 @@
-// Copyright (c) .NET Foundation. All rights reserved.
+﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 namespace Microsoft.Extensions.Options
@@ -10,7 +10,7 @@ namespace Microsoft.Extensions.Options
     public interface IOptions<out TOptions> where TOptions : class, new()
     {
         /// <summary>
-        /// The configured TOptions instance.
+        /// The default configured TOptions instance, equivalent to Get(string.Empty).
         /// </summary>
         TOptions Value { get; }
     }

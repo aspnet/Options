@@ -11,27 +11,19 @@ namespace Microsoft.Extensions.Options
     /// <typeparam name="TOptions"></typeparam>
     public class ConfigureOptions<TOptions> : IConfigureOptions<TOptions> where TOptions : class
     {
+        private readonly Action<TOptions> _action;
+
         /// <summary>
         /// Constructor.
         /// </summary>
         /// <param name="action">The action to register.</param>
         public ConfigureOptions(Action<TOptions> action)
         {
-            if (action == null)
-            {
-                throw new ArgumentNullException(nameof(action));
-            }
-
-            Action = action;
+            _action = action;
         }
 
         /// <summary>
-        /// The configuration action.
-        /// </summary>
-        public Action<TOptions> Action { get; }
-
-        /// <summary>
-        /// Invokes the registered configure Action.
+        /// Invokes the registered configure Action if the name matches.
         /// </summary>
         /// <param name="options"></param>
         public virtual void Configure(TOptions options)
@@ -41,7 +33,7 @@ namespace Microsoft.Extensions.Options
                 throw new ArgumentNullException(nameof(options));
             }
 
-            Action.Invoke(options);
+            _action?.Invoke(options);
         }
     }
 }

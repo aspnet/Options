@@ -7,12 +7,11 @@ namespace Microsoft.Extensions.Options
     /// Used to access the value of TOptions for the lifetime of a request.
     /// </summary>
     /// <typeparam name="TOptions"></typeparam>
-    public interface IOptionsSnapshot<out TOptions>
+    public interface IOptionsSnapshot<out TOptions> : IOptions<TOptions> where TOptions : class, new()
     {
         /// <summary>
-        /// Returns the value of the TOptions which will be computed once
+        /// Returns a configured TOptions instance with the given name.
         /// </summary>
-        /// <returns></returns>
-        TOptions Value { get; }
+        TOptions Get(string name);
     }
 }
