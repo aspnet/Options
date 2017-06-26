@@ -29,6 +29,9 @@ namespace Microsoft.Extensions.DependencyInjection
             services.TryAdd(ServiceDescriptor.Scoped(typeof(IOptionsSnapshot<>), typeof(OptionsSnapshot<>)));
             services.TryAdd(ServiceDescriptor.Transient(typeof(IOptionsFactory<>), typeof(OptionsFactory<>)));
             services.TryAdd(ServiceDescriptor.Singleton(typeof(IOptionsCache<>), typeof(OptionsCache<>)));
+
+            services.TryAdd(ServiceDescriptor.Transient(typeof(IOptionsNames<>), typeof(OptionsNames<>)));
+
             return services;
         }
 
@@ -66,6 +69,8 @@ namespace Microsoft.Extensions.DependencyInjection
             }
 
             services.AddSingleton<IConfigureOptions<TOptions>>(new ConfigureNamedOptions<TOptions>(name, configureOptions));
+            services.AddSingleton<IOptionsName<TOptions>>(new OptionsName<TOptions>(name));
+
             return services;
         }
 
@@ -113,6 +118,8 @@ namespace Microsoft.Extensions.DependencyInjection
             }
 
             services.AddSingleton<IPostConfigureOptions<TOptions>>(new PostConfigureOptions<TOptions>(name, configureOptions));
+            services.AddSingleton<IOptionsName<TOptions>>(new OptionsName<TOptions>(name));
+
             return services;
         }
 
