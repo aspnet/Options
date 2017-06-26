@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved. 
+﻿    // Copyright (c) .NET Foundation. All rights reserved. 
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information. 
 
 using System;
@@ -18,7 +18,7 @@ namespace Microsoft.Extensions.Options.Validation
         {
         }
 
-        internal OptionsValidationException(IEnumerable<IValidationResult> validationResults)
+        internal OptionsValidationException(IList<IValidationResult> validationResults)
             : base(validationResults.Aggregate(new StringBuilder(), (sb, vr) => sb.Append(vr.Message)).ToString())
         {
         }

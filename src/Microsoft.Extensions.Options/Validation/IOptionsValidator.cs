@@ -8,10 +8,8 @@ namespace Microsoft.Extensions.Options.Validation
         IValidationResult Validate();
     }
 
-    internal interface IOptionsValidator<in TOptions>
+    public interface IOptionsValidator<in TOptions>
     {
-        IValidationResult Validate(TOptions options);
-
-        void ValidateOptions(TOptions options);
+        IValidationResult Validate(string name, TOptions options);
     }
 }

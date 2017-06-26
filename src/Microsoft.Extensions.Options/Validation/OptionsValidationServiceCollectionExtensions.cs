@@ -21,9 +21,8 @@ namespace Microsoft.Extensions.DependencyInjection
         /// Adds services required for using options validation. 
         /// </summary> 
         /// <param name="services">The <see cref="IServiceCollection"/> to add the services to.</param>
-        /// <param name="validationLevel"> The <see cref="ValidationLevel"/> to specify exception throwing level.</param> 
         /// <returns>The <see cref="IServiceCollection"/> so that additional calls can be chained.</returns> 
-        public static IServiceCollection AddOptionsValidation(this IServiceCollection services, ValidationLevel validationLevel = ValidationLevel.None)
+        public static IServiceCollection AddOptionsValidation(this IServiceCollection services)
         {
             if (services == null)
             {
@@ -32,45 +31,21 @@ namespace Microsoft.Extensions.DependencyInjection
 
             services.TryAddSingleton<IOptionsValidatorManager, OptionsValidatorManager>();
 
-            if (validationLevel != ValidationLevel.None)
-            {
-                services.Replace(ServiceDescriptor.Transient(typeof(IOptionsFactory<>), typeof(OptionsValidationFactory<>)));
-                services.TryAddSingleton(ValidationResultHandlerFactory.Get(validationLevel));
-            }
-
             return services;
         }
 
         /// <summary> 
-        /// Configures <see cref="Action{T}"/> to be used for TOptions instance validation. 
-        /// </summary> 
-        /// <typeparam name="TOptions">The type of options being configured.</typeparam> 
-        /// <param name="services">The <see cref="IServiceCollection"/> to add the services to.</param> 
-        /// <param name="validateAction">The <see cref="Action{T}"/> that is used for validation.</param> 
-        /// <returns>The <see cref="IServiceCollection"/> so that additional calls can be chained.</returns> 
-        public static IServiceCollection Validate<TOptions>(this IServiceCollection services, Action<TOptions> validateAction)
-            where TOptions : class, new()
-        {
-            services.Validate(new ActionValidateOptions<TOptions>(validateAction, ValidationStatus.Invalid, null));
-
-            return services;
-        }
-
-        /// <summary> 
-        /// Configures <see cref="Action{T}"/> to be used for TOptions instance validation. 
+        /// Configures <see cref="Action{T}"/> to be used for all TOptions instances validation. 
         /// </summary> 
         /// <typeparam name="TOptions">The type of options being configured.</typeparam> 
         /// <param name="services">The <see cref="IServiceCollection"/> to add the services to.</param> 
         /// <param name="validateAction">The <see cref="Action{T}"/> that is used for validation.</param> 
         /// <param name="validationStatus">The <see cref="ValidationStatus"/> that will be used to return <see cref="IValidationResult"/> instance.</param> 
+        /// <param name="violationMessage">The message that will be used to return <see cref="IValidationResult"/> instance.</param> 
         /// <returns>The <see cref="IServiceCollection"/> so that additional calls can be chained.</returns> 
-        public static IServiceCollection Validate<TOptions>(this IServiceCollection services, Action<TOptions> validateAction, ValidationStatus validationStatus)
+        public static IServiceCollection ValidateAll<TOptions>(this IServiceCollection services, Action<TOptions> validateAction, ValidationStatus validationStatus = ValidationStatus.Invalid, string violationMessage = null)
             where TOptions : class, new()
-        {
-            services.Validate(new ActionValidateOptions<TOptions>(validateAction, validationStatus, null));
-
-            return services;
-        }
+            => services.Validate(null, new ActionValidateOptions<TOptions>(null, validateAction, validationStatus, violationMessage));
 
         /// <summary> 
         /// Configures <see cref="Action{T}"/> to be used for TOptions instance validation. 
@@ -81,43 +56,23 @@ namespace Microsoft.Extensions.DependencyInjection
         /// <param name="validationStatus">The <see cref="ValidationStatus"/> that will be used to return <see cref="IValidationResult"/> instance.</param> 
         /// <param name="violationMessage">The message that will be used to return <see cref="IValidationResult"/> instance.</param> 
         /// <returns>The <see cref="IServiceCollection"/> so that additional calls can be chained.</returns> 
-        public static IServiceCollection Validate<TOptions>(this IServiceCollection services, Action<TOptions> validateAction, ValidationStatus validationStatus, string violationMessage)
+        public static IServiceCollection Validate<TOptions>(this IServiceCollection services, Action<TOptions> validateAction, ValidationStatus validationStatus = ValidationStatus.Invalid, string violationMessage = null)
             where TOptions : class, new()
-        {
-            services.Validate(new ActionValidateOptions<TOptions>(validateAction, validationStatus, violationMessage));
+            => services.Validate(Options.Options.DefaultName, new ActionValidateOptions<TOptions>(Options.Options.DefaultName, validateAction, validationStatus, violationMessage));
 
-            return services;
-        }
         /// <summary> 
-        /// Configures <see cref="Func{T, TResult}"/> to be used for TOptions instance validation. 
+        /// Configures <see cref="Action{T}"/> to be used for TOptions instance validation. 
         /// </summary> 
         /// <typeparam name="TOptions">The type of options being configured.</typeparam> 
         /// <param name="services">The <see cref="IServiceCollection"/> to add the services to.</param> 
-        /// <param name="validateFunc">The <see cref="Func{T, TResult}"/> that is used for validation.</param> 
-        /// <returns>The <see cref="IServiceCollection"/> so that additional calls can be chained.</returns> 
-        public static IServiceCollection Validate<TOptions>(this IServiceCollection services, Func<TOptions, bool> validateFunc)
-            where TOptions : class, new()
-        {
-            services.Validate(new FuncValidateOptions<TOptions>(validateFunc, ValidationStatus.Invalid, null));
-
-            return services;
-        }
-
-        /// <summary> 
-        /// Configures <see cref="Func{T, TResult}"/> to be used for TOptions instance validation. 
-        /// </summary> 
-        /// <typeparam name="TOptions">The type of options being configured.</typeparam> 
-        /// <param name="services">The <see cref="IServiceCollection"/> to add the services to.</param> 
-        /// <param name="validateFunc">The <see cref="Func{T, TResult}"/> that is used for validation.</param> 
+        /// <param name="name">The name of the options instance.</param>
+        /// <param name="validateAction">The <see cref="Action{T}"/> that is used for validation.</param> 
         /// <param name="validationStatus">The <see cref="ValidationStatus"/> that will be used to return <see cref="IValidationResult"/> instance.</param> 
+        /// <param name="violationMessage">The message that will be used to return <see cref="IValidationResult"/> instance.</param> 
         /// <returns>The <see cref="IServiceCollection"/> so that additional calls can be chained.</returns> 
-        public static IServiceCollection Validate<TOptions>(this IServiceCollection services, Func<TOptions, bool> validateFunc, ValidationStatus validationStatus)
+        public static IServiceCollection Validate<TOptions>(this IServiceCollection services, string name, Action<TOptions> validateAction, ValidationStatus validationStatus = ValidationStatus.Invalid, string violationMessage = null)
             where TOptions : class, new()
-        {
-            services.Validate(new FuncValidateOptions<TOptions>(validateFunc, validationStatus, null));
-
-            return services;
-        }
+            => services.Validate(name, new ActionValidateOptions<TOptions>(name, validateAction, validationStatus, violationMessage));
 
         /// <summary> 
         /// Configures <see cref="Func{T, TResult}"/> to be used for TOptions instance validation. 
@@ -128,13 +83,47 @@ namespace Microsoft.Extensions.DependencyInjection
         /// <param name="validationStatus">The <see cref="ValidationStatus"/> that will be used to return <see cref="IValidationResult"/> instance.</param> 
         /// <param name="violationMessage">The message that will be used to return <see cref="IValidationResult"/> instance.</param> 
         /// <returns>The <see cref="IServiceCollection"/> so that additional calls can be chained.</returns> 
-        public static IServiceCollection Validate<TOptions>(this IServiceCollection services, Func<TOptions, bool> validateFunc, ValidationStatus validationStatus, string violationMessage)
+        public static IServiceCollection ValidateAll<TOptions>(this IServiceCollection services, Func<TOptions, bool> validateFunc, ValidationStatus validationStatus = ValidationStatus.Invalid, string violationMessage = null)
             where TOptions : class, new()
-        {
-            services.Validate(new FuncValidateOptions<TOptions>(validateFunc, validationStatus, violationMessage));
+            => services.Validate(null, new FuncValidateOptions<TOptions>(null, validateFunc, validationStatus, violationMessage));
 
-            return services;
-        }
+        /// <summary> 
+        /// Configures <see cref="Func{T, TResult}"/> to be used for TOptions instance validation. 
+        /// </summary> 
+        /// <typeparam name="TOptions">The type of options being configured.</typeparam> 
+        /// <param name="services">The <see cref="IServiceCollection"/> to add the services to.</param> 
+        /// <param name="validateFunc">The <see cref="Func{T, TResult}"/> that is used for validation.</param> 
+        /// <param name="validationStatus">The <see cref="ValidationStatus"/> that will be used to return <see cref="IValidationResult"/> instance.</param> 
+        /// <param name="violationMessage">The message that will be used to return <see cref="IValidationResult"/> instance.</param> 
+        /// <returns>The <see cref="IServiceCollection"/> so that additional calls can be chained.</returns> 
+        public static IServiceCollection Validate<TOptions>(this IServiceCollection services, Func<TOptions, bool> validateFunc, ValidationStatus validationStatus = ValidationStatus.Invalid, string violationMessage = null)
+            where TOptions : class, new()
+            => services.Validate(Options.Options.DefaultName, new FuncValidateOptions<TOptions>(Options.Options.DefaultName, validateFunc, validationStatus, violationMessage));
+
+        /// <summary> 
+        /// Configures <see cref="Func{T, TResult}"/> to be used for TOptions instance validation. 
+        /// </summary> 
+        /// <typeparam name="TOptions">The type of options being configured.</typeparam> 
+        /// <param name="services">The <see cref="IServiceCollection"/> to add the services to.</param> 
+        /// <param name="name">The name of the options instance.</param>
+        /// <param name="validateFunc">The <see cref="Func{T, TResult}"/> that is used for validation.</param> 
+        /// <param name="validationStatus">The <see cref="ValidationStatus"/> that will be used to return <see cref="IValidationResult"/> instance.</param> 
+        /// <param name="violationMessage">The message that will be used to return <see cref="IValidationResult"/> instance.</param> 
+        /// <returns>The <see cref="IServiceCollection"/> so that additional calls can be chained.</returns> 
+        public static IServiceCollection Validate<TOptions>(this IServiceCollection services, string name, Func<TOptions, bool> validateFunc, ValidationStatus validationStatus = ValidationStatus.Invalid, string violationMessage = null)
+            where TOptions : class, new()
+            => services.Validate(name, new FuncValidateOptions<TOptions>(name, validateFunc, validationStatus, violationMessage));
+
+        /// <summary> 
+        /// Configures <see cref="Func{T, TResult}"/> to be used for TOptions instance validation. 
+        /// </summary> 
+        /// <typeparam name="TOptions">The type of options being configured.</typeparam> 
+        /// <param name="services">The <see cref="IServiceCollection"/> to add the services to.</param> 
+        /// <param name="validateFunc">The <see cref="Func{T, TResult}"/> that is used for validation.</param> 
+        /// <returns>The <see cref="IServiceCollection"/> so that additional calls can be chained.</returns> 
+        public static IServiceCollection ValidateAll<TOptions>(this IServiceCollection services, Func<TOptions, Exception> validateFunc)
+            where TOptions : class, new()
+            => services.Validate(null, new FuncExceptionValidateOptions<TOptions>(null, validateFunc, ValidationStatus.Invalid, null));
 
         /// <summary> 
         /// Configures <see cref="Func{T, TResult}"/> to be used for TOptions instance validation. 
@@ -145,11 +134,30 @@ namespace Microsoft.Extensions.DependencyInjection
         /// <returns>The <see cref="IServiceCollection"/> so that additional calls can be chained.</returns> 
         public static IServiceCollection Validate<TOptions>(this IServiceCollection services, Func<TOptions, Exception> validateFunc)
             where TOptions : class, new()
-        {
-            services.Validate(new FuncExceptionValidateOptions<TOptions>(validateFunc, ValidationStatus.Invalid, null));
+            => services.Validate(Options.Options.DefaultName, new FuncExceptionValidateOptions<TOptions>(Options.Options.DefaultName, validateFunc, ValidationStatus.Invalid, null));
 
-            return services;
-        }
+        /// <summary> 
+        /// Configures <see cref="Func{T, TResult}"/> to be used for TOptions instance validation. 
+        /// </summary> 
+        /// <typeparam name="TOptions">The type of options being configured.</typeparam> 
+        /// <param name="services">The <see cref="IServiceCollection"/> to add the services to.</param> 
+        /// <param name="name">The name of the options instance.</param>
+        /// <param name="validateFunc">The <see cref="Func{T, TResult}"/> that is used for validation.</param> 
+        /// <returns>The <see cref="IServiceCollection"/> so that additional calls can be chained.</returns> 
+        public static IServiceCollection Validate<TOptions>(this IServiceCollection services, string name, Func<TOptions, Exception> validateFunc)
+            where TOptions : class, new()
+            => services.Validate(name, new FuncExceptionValidateOptions<TOptions>(name, validateFunc, ValidationStatus.Invalid, null));
+
+        /// <summary> 
+        /// Configures <see cref="Func{T, TResult}"/> to be used for TOptions instance validation. 
+        /// </summary> 
+        /// <typeparam name="TOptions">The type of options being configured.</typeparam> 
+        /// <param name="services">The <see cref="IServiceCollection"/> to add the services to.</param> 
+        /// <param name="validateFunc">The <see cref="Func{T, TResult}"/> that is used for validation.</param> 
+        /// <returns>The <see cref="IServiceCollection"/> so that additional calls can be chained.</returns> 
+        public static IServiceCollection ValidateAll<TOptions>(this IServiceCollection services, Func<TOptions, IEnumerable<Exception>> validateFunc)
+            where TOptions : class, new()
+            => services.Validate(null, new FuncExceptionValidateOptions<TOptions>(null, validateFunc, ValidationStatus.Invalid, null));
 
         /// <summary> 
         /// Configures <see cref="Func{T, TResult}"/> to be used for TOptions instance validation. 
@@ -160,26 +168,19 @@ namespace Microsoft.Extensions.DependencyInjection
         /// <returns>The <see cref="IServiceCollection"/> so that additional calls can be chained.</returns> 
         public static IServiceCollection Validate<TOptions>(this IServiceCollection services, Func<TOptions, IEnumerable<Exception>> validateFunc)
             where TOptions : class, new()
-        {
-            services.Validate(new FuncExceptionValidateOptions<TOptions>(validateFunc, ValidationStatus.Invalid, null));
-
-            return services;
-        }
+            => services.Validate(Options.Options.DefaultName, new FuncExceptionValidateOptions<TOptions>(Options.Options.DefaultName, validateFunc, ValidationStatus.Invalid, null));
 
         /// <summary> 
-        /// Configures <see cref="Expression{TDelegate}"/> to be used for TOptions instance validation. 
+        /// Configures <see cref="Func{T, TResult}"/> to be used for TOptions instance validation. 
         /// </summary> 
         /// <typeparam name="TOptions">The type of options being configured.</typeparam> 
         /// <param name="services">The <see cref="IServiceCollection"/> to add the services to.</param> 
-        /// <param name="validateExpression">The <see cref="Expression{TDelegate}"/> that is used for validation.</param> 
+        /// <param name="name">The name of the options instance.</param>
+        /// <param name="validateFunc">The <see cref="Func{T, TResult}"/> that is used for validation.</param> 
         /// <returns>The <see cref="IServiceCollection"/> so that additional calls can be chained.</returns> 
-        public static IServiceCollection ValidateExpr<TOptions>(this IServiceCollection services, Expression<Action<TOptions>> validateExpression)
+        public static IServiceCollection Validate<TOptions>(this IServiceCollection services, string name, Func<TOptions, IEnumerable<Exception>> validateFunc)
             where TOptions : class, new()
-        {
-            services.Validate(new ExpressionActionValidateOptions<TOptions>(validateExpression, ValidationStatus.Invalid));
-
-            return services;
-        }
+            => services.Validate(name, new FuncExceptionValidateOptions<TOptions>(name, validateFunc, ValidationStatus.Invalid, null));
 
         /// <summary> 
         /// Configures <see cref="Expression{TDelegate}"/> to be used for TOptions instance validation. 
@@ -189,28 +190,9 @@ namespace Microsoft.Extensions.DependencyInjection
         /// <param name="validateExpression">The <see cref="Expression{TDelegate}"/> that is used for validation.</param> 
         /// <param name="validationStatus">The <see cref="ValidationStatus"/> that will be used to return <see cref="IValidationResult"/> instance.</param> 
         /// <returns>The <see cref="IServiceCollection"/> so that additional calls can be chained.</returns> 
-        public static IServiceCollection ValidateExpr<TOptions>(this IServiceCollection services, Expression<Action<TOptions>> validateExpression, ValidationStatus validationStatus)
+        public static IServiceCollection ValidateExprAll<TOptions>(this IServiceCollection services, Expression<Action<TOptions>> validateExpression, ValidationStatus validationStatus = ValidationStatus.Invalid)
             where TOptions : class, new()
-        {
-            services.Validate(new ExpressionActionValidateOptions<TOptions>(validateExpression, validationStatus));
-
-            return services;
-        }
-
-        /// <summary> 
-        /// Configures <see cref="Expression{TDelegate}"/> to be used for TOptions instance validation. 
-        /// </summary> 
-        /// <typeparam name="TOptions">The type of options being configured.</typeparam> 
-        /// <param name="services">The <see cref="IServiceCollection"/> to add the services to.</param> 
-        /// <param name="validateExpression">The <see cref="Expression{TDelegate}"/> that is used for validation.</param> 
-        /// <returns>The <see cref="IServiceCollection"/> so that additional calls can be chained.</returns> 
-        public static IServiceCollection ValidateExpr<TOptions>(this IServiceCollection services, Expression<Func<TOptions, bool>> validateExpression)
-            where TOptions : class, new()
-        {
-            services.Validate(new ExpressionFuncValidateOptions<TOptions>(validateExpression, ValidationStatus.Invalid));
-
-            return services;
-        }
+            => services.Validate(null, new ExpressionActionValidateOptions<TOptions>(null, validateExpression, validationStatus));
 
         /// <summary> 
         /// Configures <see cref="Expression{TDelegate}"/> to be used for TOptions instance validation. 
@@ -220,13 +202,59 @@ namespace Microsoft.Extensions.DependencyInjection
         /// <param name="validateExpression">The <see cref="Expression{TDelegate}"/> that is used for validation.</param> 
         /// <param name="validationStatus">The <see cref="ValidationStatus"/> that will be used to return <see cref="IValidationResult"/> instance.</param> 
         /// <returns>The <see cref="IServiceCollection"/> so that additional calls can be chained.</returns> 
-        public static IServiceCollection ValidateExpr<TOptions>(this IServiceCollection services, Expression<Func<TOptions, bool>> validateExpression, ValidationStatus validationStatus)
+        public static IServiceCollection ValidateExpr<TOptions>(this IServiceCollection services, Expression<Action<TOptions>> validateExpression, ValidationStatus validationStatus = ValidationStatus.Invalid)
             where TOptions : class, new()
-        {
-            services.Validate(new ExpressionFuncValidateOptions<TOptions>(validateExpression, validationStatus));
+            => services.Validate(Options.Options.DefaultName, new ExpressionActionValidateOptions<TOptions>(Options.Options.DefaultName, validateExpression, validationStatus));
 
-            return services;
-        }
+        /// <summary> 
+        /// Configures <see cref="Expression{TDelegate}"/> to be used for TOptions instance validation. 
+        /// </summary> 
+        /// <typeparam name="TOptions">The type of options being configured.</typeparam> 
+        /// <param name="services">The <see cref="IServiceCollection"/> to add the services to.</param> 
+        /// <param name="name">The name of the options instance.</param>
+        /// <param name="validateExpression">The <see cref="Expression{TDelegate}"/> that is used for validation.</param> 
+        /// <param name="validationStatus">The <see cref="ValidationStatus"/> that will be used to return <see cref="IValidationResult"/> instance.</param> 
+        /// <returns>The <see cref="IServiceCollection"/> so that additional calls can be chained.</returns> 
+        public static IServiceCollection ValidateExpr<TOptions>(this IServiceCollection services, string name, Expression<Action<TOptions>> validateExpression, ValidationStatus validationStatus = ValidationStatus.Invalid)
+            where TOptions : class, new()
+            => services.Validate(name, new ExpressionActionValidateOptions<TOptions>(name, validateExpression, validationStatus));
+
+        /// <summary> 
+        /// Configures <see cref="Expression{TDelegate}"/> to be used for TOptions instance validation. 
+        /// </summary> 
+        /// <typeparam name="TOptions">The type of options being configured.</typeparam> 
+        /// <param name="services">The <see cref="IServiceCollection"/> to add the services to.</param> 
+        /// <param name="validateExpression">The <see cref="Expression{TDelegate}"/> that is used for validation.</param> 
+        /// <param name="validationStatus">The <see cref="ValidationStatus"/> that will be used to return <see cref="IValidationResult"/> instance.</param> 
+        /// <returns>The <see cref="IServiceCollection"/> so that additional calls can be chained.</returns> 
+        public static IServiceCollection ValidateExprAll<TOptions>(this IServiceCollection services, Expression<Func<TOptions, bool>> validateExpression, ValidationStatus validationStatus = ValidationStatus.Invalid)
+            where TOptions : class, new()
+            => services.Validate(null, new ExpressionFuncValidateOptions<TOptions>(null, validateExpression, validationStatus));
+
+        /// <summary> 
+        /// Configures <see cref="Expression{TDelegate}"/> to be used for TOptions instance validation. 
+        /// </summary> 
+        /// <typeparam name="TOptions">The type of options being configured.</typeparam> 
+        /// <param name="services">The <see cref="IServiceCollection"/> to add the services to.</param> 
+        /// <param name="validateExpression">The <see cref="Expression{TDelegate}"/> that is used for validation.</param> 
+        /// <param name="validationStatus">The <see cref="ValidationStatus"/> that will be used to return <see cref="IValidationResult"/> instance.</param> 
+        /// <returns>The <see cref="IServiceCollection"/> so that additional calls can be chained.</returns> 
+        public static IServiceCollection ValidateExpr<TOptions>(this IServiceCollection services, Expression<Func<TOptions, bool>> validateExpression, ValidationStatus validationStatus = ValidationStatus.Invalid)
+            where TOptions : class, new()
+            => services.Validate(Options.Options.DefaultName, new ExpressionFuncValidateOptions<TOptions>(Options.Options.DefaultName, validateExpression, validationStatus));
+
+        /// <summary> 
+        /// Configures <see cref="Expression{TDelegate}"/> to be used for TOptions instance validation. 
+        /// </summary> 
+        /// <typeparam name="TOptions">The type of options being configured.</typeparam> 
+        /// <param name="services">The <see cref="IServiceCollection"/> to add the services to.</param> 
+        /// <param name="name">The name of the options instance.</param>
+        /// <param name="validateExpression">The <see cref="Expression{TDelegate}"/> that is used for validation.</param> 
+        /// <param name="validationStatus">The <see cref="ValidationStatus"/> that will be used to return <see cref="IValidationResult"/> instance.</param> 
+        /// <returns>The <see cref="IServiceCollection"/> so that additional calls can be chained.</returns> 
+        public static IServiceCollection ValidateExpr<TOptions>(this IServiceCollection services, string name, Expression<Func<TOptions, bool>> validateExpression, ValidationStatus validationStatus = ValidationStatus.Invalid)
+            where TOptions : class, new()
+            => services.Validate(name, new ExpressionFuncValidateOptions<TOptions>(name, validateExpression, validationStatus));
 
         /// <summary> 
         /// Configures <see cref="IValidateOptions{TOptions}"/> class to be used for TOptions instance validation. 
@@ -234,8 +262,9 @@ namespace Microsoft.Extensions.DependencyInjection
         /// <typeparam name="TOptions">The type of options being configured.</typeparam> 
         /// <typeparam name="TValidateOptions">The type of validate options being used for validation.</typeparam> 
         /// <param name="services">The <see cref="IServiceCollection"/> to add the services to.</param> 
+        /// <param name="name">The name of the options instance.</param> 
         /// <returns>The <see cref="IServiceCollection"/> so that additional calls can be chained.</returns> 
-        public static IServiceCollection Validate<TOptions, TValidateOptions>(this IServiceCollection services)
+        public static IServiceCollection Validate<TOptions, TValidateOptions>(this IServiceCollection services, string name)
             where TOptions : class, new()
             where TValidateOptions : class, IValidateOptions<TOptions>
         {
@@ -255,9 +284,10 @@ namespace Microsoft.Extensions.DependencyInjection
         /// </summary> 
         /// <typeparam name="TOptions">The type of options being configured.</typeparam> 
         /// <param name="services">The <see cref="IServiceCollection"/> to add the services to.</param> 
+        /// <param name="name">The name of the options instance.</param> 
         /// <param name="validateOptions">The instance of <see cref="IValidateOptions{TOptions}"/> being used for validation.</param> 
         /// <returns>The <see cref="IServiceCollection"/> so that additional calls can be chained.</returns> 
-        public static IServiceCollection Validate<TOptions>(this IServiceCollection services, IValidateOptions<TOptions> validateOptions)
+        public static IServiceCollection Validate<TOptions>(this IServiceCollection services, string name, IValidateOptions<TOptions> validateOptions)
             where TOptions : class, new()
         {
             if (services == null)

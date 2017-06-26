@@ -8,8 +8,8 @@ namespace Microsoft.Extensions.Options.Validation.ValidateOptions
 {
     internal class ExpressionFuncValidateOptions<TOptions> : FuncValidateOptions<TOptions> where TOptions : class
     {
-        public ExpressionFuncValidateOptions(Expression<Func<TOptions, bool>> validateExpression, ValidationStatus validationStatus) :
-            base(validateExpression.Compile(), validationStatus, $"{validateExpression.Body} returned false")
+        public ExpressionFuncValidateOptions(string name, Expression<Func<TOptions, bool>> validateExpression, ValidationStatus validationStatus) :
+            base(name, validateExpression.Compile(), validationStatus, $"{validateExpression.Body} returned false")
         {
         }
     }

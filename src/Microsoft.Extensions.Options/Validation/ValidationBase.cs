@@ -12,7 +12,7 @@ namespace Microsoft.Extensions.Options.Validation
     /// Base class that contains helper methods. 
     /// </summary> 
     /// <typeparam name="TOptions">The type of options being requested.</typeparam> 
-    public abstract class ValidationBase<TOptions>
+    public abstract partial class ValidationBase<TOptions>
     {
         protected static IValidationResult Result(ValidationStatus validationStatus, string message) => new ValidationResult(validationStatus, message);
 
@@ -30,7 +30,9 @@ namespace Microsoft.Extensions.Options.Validation
 
         protected static IValidationResult Warning(string message) => Result(ValidationStatus.Warning, message);
 
-        protected static IValidationResult Aggregate(IEnumerable<IValidationResult> validationResults) => new AggregateValidationResult(validationResults);
+        protected static IValidationResult Aggregate(IList<IValidationResult> validationResults) => new AggregateValidationResult(validationResults);
+
+        protected static IValidationResult Aggregate(string optionsName, IList<IValidationResult> validationResults) => new AggregateNamedValidationResult(optionsName, validationResults);
 
         private class ValidationResult : IValidationResult
         {
@@ -47,23 +49,23 @@ namespace Microsoft.Extensions.Options.Validation
 
         private class AggregateValidationResult : IValidationResult
         {
-            private readonly IEnumerable<IValidationResult> _validationResults;
+            protected readonly IList<IValidationResult> ValidationResults;
 
-            public AggregateValidationResult(IEnumerable<IValidationResult> validationResults)
+            public AggregateValidationResult(IList<IValidationResult> validationResults)
             {
-                _validationResults = validationResults;
+                ValidationResults = validationResults;
             }
 
             public ValidationStatus Status
             {
                 get
                 {
-                    if (_validationResults.Any(vr => vr.Status == ValidationStatus.Invalid))
+                    if (ValidationResults.Any(vr => vr.Status == ValidationStatus.Invalid))
                     {
                         return ValidationStatus.Invalid;
                     }
 
-                    if (_validationResults.Any(vr => vr.Status == ValidationStatus.Warning))
+                    if (ValidationResults.Any(vr => vr.Status == ValidationStatus.Warning))
                     {
                         return ValidationStatus.Warning;
                     }
@@ -72,7 +74,39 @@ namespace Microsoft.Extensions.Options.Validation
                 }
             }
 
-            public string Message
+            public virtual string Message
+            {
+                get
+                {
+                    var status = Status;
+
+                    if (status == ValidationStatus.Valid)
+                    {
+                        return null;
+                    }
+
+                    var message = new StringBuilder();
+
+                    foreach (var validationResult in ValidationResults.Where(vr => vr.Status != ValidationStatus.Valid))
+                    {
+                        message.AppendLine(validationResult.Message);
+                    }
+
+                    return message.ToString();
+                }
+            }
+        }
+
+        private class AggregateNamedValidationResult : AggregateValidationResult
+        {
+            private readonly string _optionsName;
+
+            public AggregateNamedValidationResult(string optionsName, IList<IValidationResult> validationResults) : base(validationResults)
+            {
+                _optionsName = optionsName;
+            }
+
+            public override string Message
             {
                 get
                 {
@@ -87,15 +121,14 @@ namespace Microsoft.Extensions.Options.Validation
 
                     if (status == ValidationStatus.Invalid)
                     {
-                        message.AppendLine($"{typeof(TOptions).Name} object is invalid:");
+                        message.AppendLine($"{typeof(TOptions).Name} object with name '{_optionsName}' is invalid:");
                     }
-
-                    if (status == ValidationStatus.Warning)
+                    else if (status == ValidationStatus.Warning)
                     {
-                        message.AppendLine($"{typeof(TOptions).Name} object has warnings:");
+                        message.AppendLine($"{typeof(TOptions).Name} object with name '{_optionsName}' has warnings:");
                     }
 
-                    foreach (var validationResult in _validationResults)
+                    foreach (var validationResult in ValidationResults.Where(vr => vr.Status != ValidationStatus.Valid))
                     {
                         message.AppendLine(validationResult.Message);
                     }

@@ -9,8 +9,8 @@ namespace Microsoft.Extensions.Options.Validation.ValidateOptions
     {
         private readonly Func<TOptions, bool> _validateFunc;
 
-        public FuncValidateOptions(Func<TOptions, bool> validateFunc, ValidationStatus validationStatus, string violationMessage) :
-            base(validationStatus, violationMessage)
+        public FuncValidateOptions(string name, Func<TOptions, bool> validateFunc, ValidationStatus validationStatus, string violationMessage) :
+            base(name, validationStatus, violationMessage)
         {
             _validateFunc = validateFunc;
         }

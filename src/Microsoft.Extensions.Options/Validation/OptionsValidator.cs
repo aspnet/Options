@@ -7,41 +7,25 @@ using System.Linq;
 
 namespace Microsoft.Extensions.Options.Validation
 {
-    internal class OptionsValidator<TOptions> : IOptionsValidator
+    internal class OptionsValidator<TOptions> : ValidationBase<TOptions>, IOptionsValidator
         where TOptions : class, new()
     {
-        private readonly IOptions<TOptions> _options;
+        private readonly IOptionsNames<TOptions> _optionsNames;
+        private readonly IOptionsFactory<TOptions> _optionsFactory;
         private readonly IOptionsValidator<TOptions> _optionsValidator;
 
-        public OptionsValidator(IOptions<TOptions> options, IOptionsValidator<TOptions> optionsValidator)
+        public OptionsValidator(IOptionsNames<TOptions> optionsNames, IOptionsFactory<TOptions> optionsFactory, IOptionsValidator<TOptions> optionsValidator)
         {
-            _options = options;
+            _optionsNames = optionsNames;
+            _optionsFactory = optionsFactory;
             _optionsValidator = optionsValidator;
         }
 
         public IValidationResult Validate()
         {
-            return _optionsValidator.Validate(_options.Value);
-        }
-    }
-
-    internal class InnerOptionsValidator<TOptions> : ValidationBase<TOptions>, IOptionsValidator<TOptions>
-        where TOptions : class, new()
-    {
-        private readonly IEnumerable<IValidateOptions<TOptions>> _validateFuncs;
-        private readonly IValidationResultHandler _validationResultHandler;
-
-        public InnerOptionsValidator(IEnumerable<IValidateOptions<TOptions>> validateFuncs, IValidationResultHandler validationResultHandler = null)
-        {
-            _validateFuncs = validateFuncs;
-            _validationResultHandler = validationResultHandler;
-        }
-
-        public IValidationResult Validate(TOptions options)
-        {
             try
             {
-                return Aggregate(_validateFuncs.Select(vf => vf.Validate(options)));
+                return Aggregate(_optionsNames.Names.Select(ValidateOptions).ToList());
             }
             catch (Exception e)
             {
@@ -49,11 +33,36 @@ namespace Microsoft.Extensions.Options.Validation
             }
         }
 
-        public void ValidateOptions(TOptions options)
+        private IValidationResult ValidateOptions(string optionsName)
         {
-            var result = Aggregate(_validateFuncs.Select(vf => vf.Validate(options)));
+            var options = _optionsFactory.Create(optionsName);
 
-            _validationResultHandler?.Handle(result);
+            var validationResult = _optionsValidator.Validate(optionsName, options);
+
+            return validationResult;
+        }
+    }
+
+    internal class InnerOptionsValidator<TOptions> : ValidationBase<TOptions>, IOptionsValidator<TOptions>
+        where TOptions : class, new()
+    {
+        private readonly IEnumerable<IValidateOptions<TOptions>> _validateFuncs;
+
+        public InnerOptionsValidator(IEnumerable<IValidateOptions<TOptions>> validateFuncs)
+        {
+            _validateFuncs = validateFuncs;
+        }
+
+        public IValidationResult Validate(string name, TOptions options)
+        {
+            try
+            {
+                return Aggregate(name, _validateFuncs.Select(vf => vf.Validate(name, options)).ToList());
+            }
+            catch (Exception e)
+            {
+                return Invalid(e.Message);
+            }
         }
     }
 }

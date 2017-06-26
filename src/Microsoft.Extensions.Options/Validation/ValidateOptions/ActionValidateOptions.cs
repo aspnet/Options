@@ -9,8 +9,8 @@ namespace Microsoft.Extensions.Options.Validation.ValidateOptions
     {
         private readonly Action<TOptions> _validateAction;
 
-        public ActionValidateOptions(Action<TOptions> validateAction, ValidationStatus validationStatus, string violationMessage) :
-            base(validationStatus, violationMessage)
+        public ActionValidateOptions(string name, Action<TOptions> validateAction, ValidationStatus validationStatus, string violationMessage) :
+            base(name, validationStatus, violationMessage)
         {
             _validateAction = validateAction;
         }
