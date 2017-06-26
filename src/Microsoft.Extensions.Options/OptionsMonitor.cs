@@ -77,13 +77,6 @@ namespace Microsoft.Extensions.Options
             return disposable;
         }
 
-        internal class ChangeArgs : EventArgs
-        {
-            public ChangeArgs(TOptions options) => Options = options;
-
-            public TOptions Options { get; }
-        }
-
         internal class ChangeTrackerDisposable : IDisposable
         {
             private readonly Action<TOptions> _listener;
