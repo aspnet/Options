@@ -23,6 +23,11 @@ namespace Microsoft.Extensions.Options
         }
 
         /// <summary>
+        /// The configuration action.
+        /// </summary>
+        public Action<TOptions> Action { get; }
+
+        /// <summary>
         /// Invokes the registered configure Action if the name matches.
         /// </summary>
         /// <param name="options"></param>
