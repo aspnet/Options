@@ -111,7 +111,7 @@ namespace Microsoft.Extensions.Options.Tests
             Assert.Equal("1", monitor.CurrentValue.Message);
 
             string updatedMessage = null;
-            monitor.OnChange((o, n) => updatedMessage = o.Message);
+            monitor.OnChange(o => updatedMessage = o.Message);
             changeToken.InvokeChangeCallback();
             Assert.Equal("2", updatedMessage);
 
@@ -139,8 +139,8 @@ namespace Microsoft.Extensions.Options.Tests
 
             string updatedMessage = null;
             string updatedMessage2 = null;
-            var cleanup = monitor.OnChange((o, n) => updatedMessage = o.Message);
-            var cleanup2 = monitor.OnChange((o, n) => updatedMessage2 = o.Message);
+            var cleanup = monitor.OnChange(o => updatedMessage = o.Message);
+            var cleanup2 = monitor.OnChange(o => updatedMessage2 = o.Message);
             changeToken.InvokeChangeCallback();
             Assert.Equal("2", updatedMessage);
             Assert.Equal("2", updatedMessage2);
@@ -191,7 +191,7 @@ namespace Microsoft.Extensions.Options.Tests
             Assert.Equal("1", monitor.CurrentValue.Message);
 
             string updatedMessage = null;
-            var cleanup = monitor.OnChange((o,n) => updatedMessage = o.Message);
+            var cleanup = monitor.OnChange(o => updatedMessage = o.Message);
             changeToken.InvokeChangeCallback();
             Assert.Equal("2", updatedMessage);
 
@@ -229,7 +229,7 @@ namespace Microsoft.Extensions.Options.Tests
 
             string updatedMessage = null;
 
-            var cleanup = monitor.OnChange((o, n) => updatedMessage = o.Message);
+            var cleanup = monitor.OnChange(o => updatedMessage = o.Message);
 
             config.Reload();
             Assert.Equal("2", updatedMessage);
@@ -290,13 +290,10 @@ namespace Microsoft.Extensions.Options.Tests
 
             public ControllerWithMonitor(IOptionsMonitor<FakeOptions> watcher)
             {
-                _watcher = watcher.OnChange((o, n) => _options = o);
+                _watcher = watcher.OnChange(o => _options = o);
             }
 
-            public void Dispose()
-            {
-                _watcher?.Dispose();
-            }
+            public void Dispose() => _watcher?.Dispose();
 
             public string Message => _options?.Message;
         }

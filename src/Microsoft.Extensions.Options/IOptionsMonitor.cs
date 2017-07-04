@@ -22,7 +22,7 @@ namespace Microsoft.Extensions.Options
         TOptions Get(string name);
 
         /// <summary>
-        /// Registers a listener to be called whenever TOptions changes.
+        /// Registers a listener to be called whenever a named TOptions changes.
         /// </summary>
         /// <param name="listener">The action to be invoked when TOptions has changed.</param>
         /// <returns>An IDisposable which should be disposed to stop listening for changes.</returns>
