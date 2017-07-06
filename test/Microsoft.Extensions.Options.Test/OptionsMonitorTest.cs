@@ -69,6 +69,32 @@ namespace Microsoft.Extensions.Options.Tests
         }
 
         [Fact]
+        public void CanClearNamedOptions()
+        {
+            var services = new ServiceCollection().AddOptions().AddSingleton<IConfigureOptions<FakeOptions>>(new CountIncrement(this));
+
+            var sp = services.BuildServiceProvider();
+
+            var monitor = sp.GetRequiredService<IOptionsMonitor<FakeOptions>>();
+            var cache = sp.GetRequiredService<IOptionsMonitorCache<FakeOptions>>();
+            Assert.Equal("1", monitor.Get("#1").Message);
+            Assert.Equal("2", monitor.Get("#2").Message);
+            Assert.Equal("1", monitor.Get("#1").Message);
+            Assert.Equal("2", monitor.Get("#2").Message);
+            cache.Clear();
+            Assert.Equal("3", monitor.Get("#1").Message);
+            Assert.Equal("4", monitor.Get("#2").Message);
+            Assert.Equal("3", monitor.Get("#1").Message);
+            Assert.Equal("4", monitor.Get("#2").Message);
+
+            cache.Clear();
+            Assert.Equal("5", monitor.Get("#1").Message);
+            Assert.Equal("6", monitor.Get("#2").Message);
+            Assert.Equal("5", monitor.Get("#1").Message);
+            Assert.Equal("6", monitor.Get("#2").Message);
+        }
+
+        [Fact]
         public void CanWatchNamedOptions()
         {
             var services = new ServiceCollection().AddOptions().AddSingleton<IConfigureOptions<FakeOptions>>(new CountIncrement(this));
