@@ -11,9 +11,23 @@ namespace Microsoft.Extensions.Options.Tests
 {
     public class OptionsMonitorTest
     {
+        [Fact]
+        public void MonitorUsesFactory()
+        {
+            var services = new ServiceCollection().AddOptions()
+                .AddSingleton<IOptionsFactory<FakeOptions>, FakeOptionsFactory>()
+                .Configure<FakeOptions>(o => o.Message = "Ignored")
+                .BuildServiceProvider();
+
+            var monitor = services.GetRequiredService<IOptionsMonitor<FakeOptions>>();
+            Assert.Equal(FakeOptionsFactory.Options, monitor.CurrentValue);
+            Assert.Equal(FakeOptionsFactory.Options, monitor.Get("1"));
+            Assert.Equal(FakeOptionsFactory.Options, monitor.Get("bsdfsdf"));
+        }
+
         public int SetupInvokeCount { get; set; }
 
-        private class CountIncrement : IConfigureOptions<FakeOptions>
+        private class CountIncrement : IConfigureNamedOptions<FakeOptions>
         {
             private OptionsMonitorTest _test;
 
@@ -22,7 +36,9 @@ namespace Microsoft.Extensions.Options.Tests
                 _test = test;
             }
 
-            public void Configure(FakeOptions options)
+            public void Configure(FakeOptions options) => Configure(Options.DefaultName, options);
+
+            public void Configure(string name, FakeOptions options)
             {
                 _test.SetupInvokeCount++;
                 options.Message += _test.SetupInvokeCount;
@@ -38,7 +54,7 @@ namespace Microsoft.Extensions.Options.Tests
 
             public FakeChangeToken Token { get; set; }
 
-            public string Name { get; }
+            public string Name { get; set; }
 
             public IChangeToken GetChangeToken()
             {
@@ -53,14 +69,66 @@ namespace Microsoft.Extensions.Options.Tests
         }
 
         [Fact]
+        public void CanClearNamedOptions()
+        {
+            var services = new ServiceCollection().AddOptions().AddSingleton<IConfigureOptions<FakeOptions>>(new CountIncrement(this));
+
+            var sp = services.BuildServiceProvider();
+
+            var monitor = sp.GetRequiredService<IOptionsMonitor<FakeOptions>>();
+            var cache = sp.GetRequiredService<IOptionsMonitorCache<FakeOptions>>();
+            Assert.Equal("1", monitor.Get("#1").Message);
+            Assert.Equal("2", monitor.Get("#2").Message);
+            Assert.Equal("1", monitor.Get("#1").Message);
+            Assert.Equal("2", monitor.Get("#2").Message);
+            cache.Clear();
+            Assert.Equal("3", monitor.Get("#1").Message);
+            Assert.Equal("4", monitor.Get("#2").Message);
+            Assert.Equal("3", monitor.Get("#1").Message);
+            Assert.Equal("4", monitor.Get("#2").Message);
+
+            cache.Clear();
+            Assert.Equal("5", monitor.Get("#1").Message);
+            Assert.Equal("6", monitor.Get("#2").Message);
+            Assert.Equal("5", monitor.Get("#1").Message);
+            Assert.Equal("6", monitor.Get("#2").Message);
+        }
+
+        [Fact]
+        public void CanWatchNamedOptions()
+        {
+            var services = new ServiceCollection().AddOptions().AddSingleton<IConfigureOptions<FakeOptions>>(new CountIncrement(this));
+            var changeToken = new FakeChangeToken();
+            services.AddSingleton<IOptionsChangeTokenSource<FakeOptions>>(new FakeSource(changeToken) { Name = "#1" });
+            var changeToken2 = new FakeChangeToken();
+            services.AddSingleton<IOptionsChangeTokenSource<FakeOptions>>(new FakeSource(changeToken2) { Name = "#2" });
+
+            var sp = services.BuildServiceProvider();
+
+            var monitor = sp.GetRequiredService<IOptionsMonitor<FakeOptions>>();
+            Assert.NotNull(monitor);
+            Assert.Equal("1", monitor.Get("#1").Message);
+
+            string updatedMessage = null;
+            monitor.OnChange((o, n) => updatedMessage = o.Message + n);
+
+            changeToken.InvokeChangeCallback();
+            Assert.Equal("2#1", updatedMessage);
+            Assert.Equal("2", monitor.Get("#1").Message);
+
+            changeToken2.InvokeChangeCallback();
+            Assert.Equal("3#2", updatedMessage);
+            Assert.Equal("3", monitor.Get("#2").Message);
+        }
+
+        [Fact]
         public void CanWatchOptions()
         {
             var services = new ServiceCollection().AddOptions();
 
             services.AddSingleton<IConfigureOptions<FakeOptions>>(new CountIncrement(this));
             var changeToken = new FakeChangeToken();
-            var tracker = new FakeSource(changeToken);
-            services.AddSingleton<IOptionsChangeTokenSource<FakeOptions>>(tracker);
+            services.AddSingleton<IOptionsChangeTokenSource<FakeOptions>>(new FakeSource(changeToken));
 
             var sp = services.BuildServiceProvider();
 
@@ -205,6 +273,42 @@ namespace Microsoft.Extensions.Options.Tests
             Assert.Equal("3", monitor.CurrentValue.Message);
         }
 
+        [Fact]
+        public void CanMonitorConfigBoundNamedOptions()
+        {
+            var config = new ConfigurationBuilder().AddInMemoryCollection().Build();
+
+            var services = new ServiceCollection().AddOptions();
+            services.AddSingleton<IConfigureOptions<FakeOptions>>(new CountIncrement(this));
+            services.Configure<FakeOptions>("config", config);
+
+            var sp = services.BuildServiceProvider();
+
+            var monitor = sp.GetRequiredService<IOptionsMonitor<FakeOptions>>();
+            Assert.NotNull(monitor);
+            Assert.Equal("1", monitor.CurrentValue.Message);
+
+            string updatedMessage = null;
+
+            var cleanup = monitor.OnChange((o, n) => updatedMessage = o.Message + "#" + n);
+
+            config.Reload();
+            Assert.Equal("2#config", updatedMessage);
+
+            // Verify non-named option is unchanged
+            Assert.Equal("1", monitor.CurrentValue.Message);
+
+            cleanup.Dispose();
+            config.Reload();
+
+            // Verify our message don't change after the subscription is disposed
+            Assert.Equal("2#config", updatedMessage);
+
+            // But the monitor still gets updated with the latest current value
+            Assert.Equal("3", monitor.Get("config").Message);
+            Assert.Equal("1", monitor.CurrentValue.Message);
+        }
+
         public class ControllerWithMonitor : IDisposable
         {
             IDisposable _watcher;
@@ -215,10 +319,7 @@ namespace Microsoft.Extensions.Options.Tests
                 _watcher = watcher.OnChange(o => _options = o);
             }
 
-            public void Dispose()
-            {
-                _watcher?.Dispose();
-            }
+            public void Dispose() => _watcher?.Dispose();
 
             public string Message => _options?.Message;
         }
