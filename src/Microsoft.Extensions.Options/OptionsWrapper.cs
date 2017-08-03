@@ -1,4 +1,5 @@
-﻿using System;
+﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 namespace Microsoft.Extensions.Options
 {
@@ -21,20 +22,5 @@ namespace Microsoft.Extensions.Options
         /// The options instance.
         /// </summary>
         public TOptions Value { get; }
-
-        public void Add(string name, TOptions options)
-        {
-            throw new NotImplementedException();
-        }
-
-        public TOptions Get(string name)
-        {
-            return Value;
-        }
-
-        public bool Remove(string name)
-        {
-            throw new NotImplementedException();
-        }
     }
 }

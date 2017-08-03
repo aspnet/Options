@@ -20,7 +20,7 @@ namespace Microsoft.Extensions.Options
         /// </summary>
         /// <param name="config">The IConfiguration instance.</param>
         public ConfigureFromConfigurationOptions(IConfiguration config) 
-            : base(options => ConfigurationBinder.Bind(config, options))
+            : base(config.Bind)
         {
             if (config == null)
             {

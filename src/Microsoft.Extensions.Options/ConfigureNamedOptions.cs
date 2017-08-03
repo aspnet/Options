@@ -9,8 +9,11 @@ namespace Microsoft.Extensions.Options
     /// Implementation of IConfigureNamedOptions.
     /// </summary>
     /// <typeparam name="TOptions"></typeparam>
-    public class ConfigureNamedOptions<TOptions> : IConfigureNamedOptions<TOptions>, IConfigureOptions<TOptions> where TOptions : class
+    public class ConfigureNamedOptions<TOptions> : IConfigureNamedOptions<TOptions> where TOptions : class
     {
+        private readonly string _name;
+        private readonly Action<TOptions> _action;
+
         /// <summary>
         /// Constructor.
         /// </summary>
@@ -18,19 +21,9 @@ namespace Microsoft.Extensions.Options
         /// <param name="action">The action to register.</param>
         public ConfigureNamedOptions(string name, Action<TOptions> action)
         {
-            Name = name;
-            Action = action;
+            _name = name;
+            _action = action;
         }
-
-        /// <summary>
-        /// The options name.
-        /// </summary>
-        public string Name { get; }
-
-        /// <summary>
-        /// The configuration action.
-        /// </summary>
-        public Action<TOptions> Action { get; }
 
         /// <summary>
         /// Invokes the registered configure Action if the name matches.
@@ -45,9 +38,9 @@ namespace Microsoft.Extensions.Options
             }
 
             // Null name is used to configure all named options.
-            if (Name == null || name == Name)
+            if (_name == null || name == _name)
             {
-                Action?.Invoke(options);
+                _action?.Invoke(options);
             }
         }
 

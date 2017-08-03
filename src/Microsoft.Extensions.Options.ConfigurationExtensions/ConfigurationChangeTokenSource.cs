@@ -13,7 +13,7 @@ namespace Microsoft.Extensions.Options
     /// <typeparam name="TOptions"></typeparam>
     public class ConfigurationChangeTokenSource<TOptions> : IOptionsChangeTokenSource<TOptions>
     {
-        private IConfiguration _config;
+        private readonly IConfiguration _config;
 
         /// <summary>
         /// Constructor taking the IConfiguration instance to watch.
@@ -29,11 +29,8 @@ namespace Microsoft.Extensions.Options
         /// <param name="config">The configuration instance.</param>
         public ConfigurationChangeTokenSource(string name, IConfiguration config)
         {
-            if (config == null)
-            {
-                throw new ArgumentNullException(nameof(config));
-            }
-            _config = config;
+            Name = name;
+            _config = config ?? throw new ArgumentNullException(nameof(config));
             Name = name ?? Options.DefaultName;
         }
 
@@ -43,9 +40,6 @@ namespace Microsoft.Extensions.Options
         /// Returns the reloadToken from IConfiguration.
         /// </summary>
         /// <returns></returns>
-        public IChangeToken GetChangeToken()
-        {
-            return _config.GetReloadToken();
-        }
+        public IChangeToken GetChangeToken() => _config.GetReloadToken();
     }
 }
