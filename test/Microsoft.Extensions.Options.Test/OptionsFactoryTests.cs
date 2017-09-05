@@ -1,6 +1,7 @@
 ﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System;
 using Microsoft.Extensions.DependencyInjection;
 using Xunit;
 
@@ -174,6 +175,7 @@ namespace Microsoft.Extensions.Options.Tests
             var sp = services.BuildServiceProvider();
             var factory = sp.GetRequiredService<IOptionsFactory<FakeOptions>>();
             Assert.Equal("ABhi!", factory.Create(Options.DefaultName).Message);
+            Assert.Equal("", factory.Create("anything").Message);
         }
 
         public class UberBothSetup : IConfigureNamedOptions<FakeOptions>, IConfigureNamedOptions<FakeOptions2>, IPostConfigureOptions<FakeOptions>, IPostConfigureOptions<FakeOptions2>
@@ -238,5 +240,21 @@ namespace Microsoft.Extensions.Options.Tests
             Assert.Equal("![[end]]|", factory2.Create("end").Message);
         }
 
+        [Fact]
+        public void ConfigureOptionsThrowsWithAction()
+        {
+            var services = new ServiceCollection().AddOptions();
+            Action<FakeOptions> act = o => o.Message = "whatev";
+            var error = Assert.Throws<InvalidOperationException>(() => services.ConfigureOptions(act));
+            Assert.Equal("No IConfigureOptions<> or IPostConfigureOptions<> implementations were found, did you mean to call Configure<> or PostConfigure<>?", error.Message);
+        }
+
+        [Fact]
+        public void ConfigureOptionsThrowsIfNothingFound()
+        {
+            var services = new ServiceCollection().AddOptions();
+            var error = Assert.Throws<InvalidOperationException>(() => services.ConfigureOptions(new object()));
+            Assert.Equal("No IConfigureOptions<> or IPostConfigureOptions<> implementations were found.", error.Message);
+        }
     }
 }

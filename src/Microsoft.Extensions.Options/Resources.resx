@@ -133,6 +133,6 @@
     <value>No IConfigureOptions&lt;&gt; or IPostConfigureOptions&lt;&gt; implementations were found.</value>
   </data>
   <data name="Error_NoIConfigureOptionsAndAction" xml:space="preserve">
-    <value>found did you mean to call Configure&lt;&gt; or PostConfigure&lt;&gt;?</value>
+    <value>No IConfigureOptions&lt;&gt; or IPostConfigureOptions&lt;&gt; implementations were found, did you mean to call Configure&lt;&gt; or PostConfigure&lt;&gt;?</value>
   </data>
 </root>

@@ -81,7 +81,7 @@ namespace Microsoft.Extensions.Options
             => GetString("Error_NoIConfigureOptions");
 
         /// <summary>
-        /// found did you mean to call Configure&lt;&gt; or PostConfigure&lt;&gt;?
+        /// No IConfigureOptions&lt;&gt; or IPostConfigureOptions&lt;&gt; implementations were found, did you mean to call Configure&lt;&gt; or PostConfigure&lt;&gt;?
         /// </summary>
         internal static string Error_NoIConfigureOptionsAndAction
         {
@@ -89,7 +89,7 @@ namespace Microsoft.Extensions.Options
         }
 
         /// <summary>
-        /// found did you mean to call Configure&lt;&gt; or PostConfigure&lt;&gt;?
+        /// No IConfigureOptions&lt;&gt; or IPostConfigureOptions&lt;&gt; implementations were found, did you mean to call Configure&lt;&gt; or PostConfigure&lt;&gt;?
         /// </summary>
         internal static string FormatError_NoIConfigureOptionsAndAction()
             => GetString("Error_NoIConfigureOptionsAndAction");
