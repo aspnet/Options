@@ -153,7 +153,90 @@ namespace Microsoft.Extensions.Options.Tests
             Assert.Equal("Default1", factory.Create("1").Message);
         }
 
+        public class FakeOptionsSetupA : ConfigureOptions<FakeOptions>
+        {
+            public FakeOptionsSetupA() : base(o => o.Message += "A") { }
+        }
 
+        public class FakeOptionsSetupB : ConfigureOptions<FakeOptions>
+        {
+            public FakeOptionsSetupB() : base(o => o.Message += "B") { }
+        }
+
+        [Fact]
+        public void CanConfigureOptionsOnlyDefault()
+        {
+            var services = new ServiceCollection().AddOptions();
+            services.ConfigureOptions<FakeOptionsSetupA>();
+            services.ConfigureOptions(typeof(FakeOptionsSetupB));
+            services.ConfigureOptions(new ConfigureOptions<FakeOptions>(o => o.Message += "hi!"));
+
+            var sp = services.BuildServiceProvider();
+            var factory = sp.GetRequiredService<IOptionsFactory<FakeOptions>>();
+            Assert.Equal("ABhi!", factory.Create(Options.DefaultName).Message);
+        }
+
+        public class UberBothSetup : IConfigureNamedOptions<FakeOptions>, IConfigureNamedOptions<FakeOptions2>, IPostConfigureOptions<FakeOptions>, IPostConfigureOptions<FakeOptions2>
+        {
+            public void Configure(string name, FakeOptions options)
+                => options.Message += "["+name;
+
+            public void Configure(FakeOptions options) => Configure(Options.DefaultName, options);
+
+            public void Configure(string name, FakeOptions2 options)
+                => options.Message += "[["+name;
+
+            public void Configure(FakeOptions2 options) => Configure(Options.DefaultName, options);
+
+            public void PostConfigure(string name, FakeOptions2 options)
+                => options.Message += "]]";
+
+            public void PostConfigure(string name, FakeOptions options)
+                => options.Message += "]";
+        }
+
+        [Fact]
+        public void CanConfigureTwoOptionsWithConfigureOptions()
+        {
+            var services = new ServiceCollection().AddOptions();
+            services.ConfigureOptions<UberBothSetup>();
+
+            var sp = services.BuildServiceProvider();
+            var factory = sp.GetRequiredService<IOptionsFactory<FakeOptions>>();
+            var factory2 = sp.GetRequiredService<IOptionsFactory<FakeOptions2>>();
+
+            Assert.Equal("[]", factory.Create(Options.DefaultName).Message);
+            Assert.Equal("[hao]", factory.Create("hao").Message);
+            Assert.Equal("[[]]", factory2.Create(Options.DefaultName).Message);
+            Assert.Equal("[[hao]]", factory2.Create("hao").Message);
+        }
+
+        [Fact]
+        public void CanMixConfigureEverything()
+        {
+            var services = new ServiceCollection().AddOptions();
+            services.ConfigureAll<FakeOptions2>(o => o.Message = "!");
+            services.ConfigureOptions<UberBothSetup>();
+            services.Configure<FakeOptions>("#1", o => o.Message += "#");
+            services.PostConfigureAll<FakeOptions2>(o => o.Message += "|");
+            services.ConfigureOptions(new PostConfigureOptions<FakeOptions>("override", o => o.Message = "override"));
+            services.PostConfigure<FakeOptions>("end", o => o.Message += "_");
+
+            var sp = services.BuildServiceProvider();
+            var factory = sp.GetRequiredService<IOptionsFactory<FakeOptions>>();
+            var factory2 = sp.GetRequiredService<IOptionsFactory<FakeOptions2>>();
+
+            Assert.Equal("[]", factory.Create(Options.DefaultName).Message);
+            Assert.Equal("[hao]", factory.Create("hao").Message);
+            Assert.Equal("[#1#]", factory.Create("#1").Message);
+            Assert.Equal("![[#1]]|", factory2.Create("#1").Message);
+            Assert.Equal("![[]]|", factory2.Create(Options.DefaultName).Message);
+            Assert.Equal("![[hao]]|", factory2.Create("hao").Message);
+            Assert.Equal("override", factory.Create("override").Message);
+            Assert.Equal("![[override]]|", factory2.Create("override").Message);
+            Assert.Equal("[end]_", factory.Create("end").Message);
+            Assert.Equal("![[end]]|", factory2.Create("end").Message);
+        }
 
     }
 }
