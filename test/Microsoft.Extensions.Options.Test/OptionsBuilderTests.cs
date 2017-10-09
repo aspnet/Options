@@ -15,12 +15,13 @@ namespace Microsoft.Extensions.Options.Tests
             var services = new ServiceCollection().AddOptions();
             var builder = services.BuildOptions<FakeOptions>();
             builder
-                .Configure(options => options.Message = "Default")
-                .Configure(options => options.Message += "0");
+                .PostConfigure(options => options.Message += "]")
+                .Configure(options => options.Message += "[")
+                .Configure(options => options.Message += "Default");
 
             var sp = services.BuildServiceProvider();
             var factory = sp.GetRequiredService<IOptionsFactory<FakeOptions>>();
-            Assert.Equal("Default0", factory.Create(Options.DefaultName).Message);
+            Assert.Equal("[Default]", factory.Create(Options.DefaultName).Message);
         }
 
         [Fact]
@@ -29,13 +30,19 @@ namespace Microsoft.Extensions.Options.Tests
             var services = new ServiceCollection().AddOptions();
             var builder1 = services.BuildOptions<FakeOptions>("1");
             var builder2 = services.BuildOptions<FakeOptions>("2");
-            builder1.Configure(options => options.Message = "one");
-            builder2.Configure(options => options.Message = "two");
+            builder1
+                .PostConfigure(options => options.Message += "]")
+                .Configure(options => options.Message += "[")
+                .Configure(options => options.Message += "one");
+            builder2
+                .PostConfigure(options => options.Message += ">")
+                .Configure(options => options.Message += "<")
+                .Configure(options => options.Message += "two");
 
             var sp = services.BuildServiceProvider();
             var factory = sp.GetRequiredService<IOptionsFactory<FakeOptions>>();
-            Assert.Equal("one", factory.Create("1").Message);
-            Assert.Equal("two", factory.Create("2").Message);
+            Assert.Equal("[one]", factory.Create("1").Message);
+            Assert.Equal("<two>", factory.Create("2").Message);
         }
 
         [Fact]
