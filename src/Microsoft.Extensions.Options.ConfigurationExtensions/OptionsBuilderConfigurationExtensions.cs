@@ -8,7 +8,7 @@ using Microsoft.Extensions.Options;
 namespace Microsoft.Extensions.DependencyInjection
 {
     /// <summary>
-    /// Extension methods for adding configuration related options services to the DI container via IOptionsBuilder.
+    /// Extension methods for adding configuration related options services to the DI container via <see cref="OptionsBuilder{TOptions}"/>.
     /// </summary>
     public static class OptionsBuilderConfigurationExtensions
     {
@@ -17,9 +17,9 @@ namespace Microsoft.Extensions.DependencyInjection
         /// </summary>
         /// <typeparam name="TOptions">The options type to be configured.</typeparam>
         /// <param name="optionsBuilder">The options builder to add the services to.</param>
-       /// <param name="config">The configuration being bound.</param>
-        /// <returns>The <see cref="IOptionsBuilder{TOptions}"/> so that additional calls can be chained.</returns>
-        public static IOptionsBuilder<TOptions> Configure<TOptions>(this IOptionsBuilder<TOptions> optionsBuilder, IConfiguration config) where TOptions : class
+        /// <param name="config">The configuration being bound.</param>
+        /// <returns>The <see cref="OptionsBuilder{TOptions}"/> so that additional calls can be chained.</returns>
+        public static OptionsBuilder<TOptions> Configure<TOptions>(this OptionsBuilder<TOptions> optionsBuilder, IConfiguration config) where TOptions : class
         {
             if (optionsBuilder == null)
             {

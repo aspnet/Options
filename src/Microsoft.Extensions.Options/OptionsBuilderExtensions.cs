@@ -11,7 +11,7 @@ using Microsoft.Extensions.Options;
 namespace Microsoft.Extensions.DependencyInjection
 {
     /// <summary>
-    /// Extension methods for adding options services to the DI container via IOptionsBuilder.
+    /// Extension methods for adding options services to the DI container via <see cref="OptionsBuilder{TOptions}"/>.
     /// </summary>
     public static class OptionsBuilderExtensions
     {
@@ -22,8 +22,8 @@ namespace Microsoft.Extensions.DependencyInjection
         /// <typeparam name="TOptions">The options type to be configured.</typeparam>
         /// <param name="optionsBuilder">The options builder to add the services to.</param>
         /// <param name="configureOptions">The action used to configure the options.</param>
-        /// <returns>The <see cref="IOptionsBuilder{TOptions}"/> so that additional calls can be chained.</returns>
-        public static IOptionsBuilder<TOptions> Configure<TOptions>(this IOptionsBuilder<TOptions> optionsBuilder, Action<TOptions> configureOptions)
+        /// <returns>The <see cref="OptionsBuilder{TOptions}"/> so that additional calls can be chained.</returns>
+        public static OptionsBuilder<TOptions> Configure<TOptions>(this OptionsBuilder<TOptions> optionsBuilder, Action<TOptions> configureOptions)
             where TOptions : class
         {
             if (optionsBuilder == null)
@@ -42,8 +42,8 @@ namespace Microsoft.Extensions.DependencyInjection
         /// <typeparam name="TOptions">The options type to be configured.</typeparam>
         /// <param name="optionsBuilder">The options builder to add the services to.</param>
         /// <param name="configureOptions">The action used to configure the options.</param>
-        /// <returns>The <see cref="IOptionsBuilder{TOptions}"/> so that additional calls can be chained.</returns>
-        public static IOptionsBuilder<TOptions> PostConfigure<TOptions>(this IOptionsBuilder<TOptions> optionsBuilder, Action<TOptions> configureOptions)
+        /// <returns>The <see cref="OptionsBuilder{TOptions}"/> so that additional calls can be chained.</returns>
+        public static OptionsBuilder<TOptions> PostConfigure<TOptions>(this OptionsBuilder<TOptions> optionsBuilder, Action<TOptions> configureOptions)
             where TOptions : class
         {
             if (optionsBuilder == null)

@@ -7,10 +7,10 @@ using Microsoft.Extensions.DependencyInjection;
 namespace Microsoft.Extensions.Options
 {
     /// <summary>
-    /// Implementation of IOptionsBuilder.
+    /// Represents a builder that configures a named TOptions instance.
     /// </summary>
     /// <typeparam name="TOptions">The type of options being requested.</typeparam>
-    public class OptionsBuilder<TOptions> : IOptionsBuilder<TOptions> where TOptions : class
+    public class OptionsBuilder<TOptions> where TOptions : class
     {
         private readonly IServiceCollection _services;
         private readonly string _name;
@@ -26,8 +26,14 @@ namespace Microsoft.Extensions.Options
             _name = name;
         }
 
+        /// <summary>
+        /// The name of the options instance being configured.
+        /// </summary>
         public string Name => _name;
 
+        /// <summary>
+        /// The <see cref="IServiceCollection"/> to add the services to.
+        /// </summary>
         public IServiceCollection Services => _services;
     }
 }
