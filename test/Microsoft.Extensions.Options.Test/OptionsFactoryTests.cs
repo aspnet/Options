@@ -256,5 +256,54 @@ namespace Microsoft.Extensions.Options.Tests
             var error = Assert.Throws<InvalidOperationException>(() => services.ConfigureOptions(new object()));
             Assert.Equal("No IConfigureOptions<> or IPostConfigureOptions<> implementations were found.", error.Message);
         }
+
+        public class SomeService
+        {
+            public SomeService(string stuff) => Stuff = stuff;
+
+            public string Stuff { get; set; }
+        }
+
+        public class SomeCounter
+        {
+            public static int Count;
+
+            public SomeCounter() => Current = Count++;
+
+            public int Current { get; }
+        }
+
+        [Fact]
+        public void ConfigureOptionsWithSingletonDepWillUpdate()
+        {
+            var someService = new SomeService("Something");
+            var services = new ServiceCollection().AddOptions().AddSingleton(someService);
+            services.Configure<FakeOptions, SomeService>((o,s) => o.Message = s.Stuff);
+            services.Configure<FakeOptions, SomeService>("named", (o, s) => o.Message = "named "+s.Stuff);
+
+            var sp = services.BuildServiceProvider();
+            var factory = sp.GetRequiredService<IOptionsFactory<FakeOptions>>();
+
+            Assert.Equal("named Something", factory.Create("named").Message);
+            Assert.Equal("Something", factory.Create(Options.DefaultName).Message);
+
+            someService.Stuff = "Else";
+
+            Assert.Equal("named Else", factory.Create("named").Message);
+            Assert.Equal("Else", factory.Create(Options.DefaultName).Message);
+        }
+
+        [Fact]
+        public void ConfigureOptionsWithTransientDep()
+        {
+            var services = new ServiceCollection().AddOptions().AddTransient<SomeCounter>();
+            services.Configure<FakeOptions, SomeCounter, SomeCounter, SomeCounter>("name", (o, s, s2, s3) => o.Message = s.Current + " " + s2.Current + " " + s3.Current);
+
+            var sp = services.BuildServiceProvider();
+            var factory = sp.GetRequiredService<IOptionsFactory<FakeOptions>>();
+
+            Assert.Equal("0 1 2", factory.Create("name").Message);
+        }
+
     }
 }
