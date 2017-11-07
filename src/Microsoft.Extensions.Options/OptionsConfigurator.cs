@@ -10,7 +10,7 @@ namespace Microsoft.Extensions.Options
     /// Represents a builder that configures a named TOptions instance.
     /// </summary>
     /// <typeparam name="TOptions">The type of options being requested.</typeparam>
-    public class OptionsBuilder<TOptions> where TOptions : class
+    public class OptionsConfigurator<TOptions> where TOptions : class
     {
         private readonly IServiceCollection _services;
         private readonly string _name;
@@ -20,7 +20,7 @@ namespace Microsoft.Extensions.Options
         /// </summary>
         /// <param name="services">The <see cref="IServiceCollection"/> to add the services to.</param>
         /// <param name="name">The name of the options instance being configured.</param>
-        public OptionsBuilder(IServiceCollection services, string name)
+        public OptionsConfigurator(IServiceCollection services, string name)
         {
             _services = services;
             _name = name;

@@ -11,28 +11,28 @@ using Microsoft.Extensions.Options;
 namespace Microsoft.Extensions.DependencyInjection
 {
     /// <summary>
-    /// Extension methods for adding options services to the DI container via <see cref="OptionsBuilder{TOptions}"/>.
+    /// Extension methods for adding options services to the DI container via <see cref="OptionsConfigurator{TOptions}"/>.
     /// </summary>
-    public static class OptionsBuilderExtensions
+    public static class OptionsConfiguratorExtensions
     {
         /// <summary>
         /// Registers an action used to configure a particular type of options.
         /// Note: These are run before all <seealso cref="OptionsServiceCollectionExtensions.PostConfigure{TOptions}(IServiceCollection, Action{TOptions})"/>.
         /// </summary>
         /// <typeparam name="TOptions">The options type to be configured.</typeparam>
-        /// <param name="optionsBuilder">The options builder to add the services to.</param>
+        /// <param name="optionsConfigurator">The options builder to add the services to.</param>
         /// <param name="configureOptions">The action used to configure the options.</param>
-        /// <returns>The <see cref="OptionsBuilder{TOptions}"/> so that additional calls can be chained.</returns>
-        public static OptionsBuilder<TOptions> Configure<TOptions>(this OptionsBuilder<TOptions> optionsBuilder, Action<TOptions> configureOptions)
+        /// <returns>The <see cref="OptionsConfigurator{TOptions}"/> so that additional calls can be chained.</returns>
+        public static OptionsConfigurator<TOptions> Configure<TOptions>(this OptionsConfigurator<TOptions> optionsConfigurator, Action<TOptions> configureOptions)
             where TOptions : class
         {
-            if (optionsBuilder == null)
+            if (optionsConfigurator == null)
             {
-                throw new ArgumentNullException(nameof(optionsBuilder));
+                throw new ArgumentNullException(nameof(optionsConfigurator));
             }
 
-            optionsBuilder.Services.Configure<TOptions>(optionsBuilder.Name, configureOptions);
-            return optionsBuilder;
+            optionsConfigurator.Services.Configure<TOptions>(optionsConfigurator.Name, configureOptions);
+            return optionsConfigurator;
         }
 
         /// <summary>
@@ -40,19 +40,19 @@ namespace Microsoft.Extensions.DependencyInjection
         /// Note: These are run after all <seealso cref="OptionsServiceCollectionExtensions.Configure{TOptions}(IServiceCollection, Action{TOptions})"/>.
         /// </summary>
         /// <typeparam name="TOptions">The options type to be configured.</typeparam>
-        /// <param name="optionsBuilder">The options builder to add the services to.</param>
+        /// <param name="optionsConfigurator">The options builder to add the services to.</param>
         /// <param name="configureOptions">The action used to configure the options.</param>
-        /// <returns>The <see cref="OptionsBuilder{TOptions}"/> so that additional calls can be chained.</returns>
-        public static OptionsBuilder<TOptions> PostConfigure<TOptions>(this OptionsBuilder<TOptions> optionsBuilder, Action<TOptions> configureOptions)
+        /// <returns>The <see cref="OptionsConfigurator{TOptions}"/> so that additional calls can be chained.</returns>
+        public static OptionsConfigurator<TOptions> PostConfigure<TOptions>(this OptionsConfigurator<TOptions> optionsConfigurator, Action<TOptions> configureOptions)
             where TOptions : class
         {
-            if (optionsBuilder == null)
+            if (optionsConfigurator == null)
             {
-                throw new ArgumentNullException(nameof(optionsBuilder));
+                throw new ArgumentNullException(nameof(optionsConfigurator));
             }
 
-            optionsBuilder.Services.PostConfigure<TOptions>(optionsBuilder.Name, configureOptions);
-            return optionsBuilder;
+            optionsConfigurator.Services.PostConfigure<TOptions>(optionsConfigurator.Name, configureOptions);
+            return optionsConfigurator;
         }
     }
 }

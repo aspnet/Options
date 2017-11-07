@@ -7,7 +7,7 @@ using Xunit;
 
 namespace Microsoft.Extensions.Options.Tests
 {
-    public class OptionsBuilderTest
+    public class OptionsConfiguratorTest
     {
         [Fact]
         public void CanSupportDefaultName()
