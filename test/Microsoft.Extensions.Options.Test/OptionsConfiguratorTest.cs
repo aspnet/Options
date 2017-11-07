@@ -12,8 +12,8 @@ namespace Microsoft.Extensions.Options.Tests
         [Fact]
         public void CanSupportDefaultName()
         {
-            var services = new ServiceCollection().AddOptions();
-            var builder = services.BuildOptions<FakeOptions>();
+            var services = new ServiceCollection();
+            var builder = services.AddOptions<FakeOptions>();
             builder
                 .PostConfigure(options => options.Message += "]")
                 .Configure(options => options.Message += "[")
@@ -27,9 +27,9 @@ namespace Microsoft.Extensions.Options.Tests
         [Fact]
         public void CanSupportNamedOptions()
         {
-            var services = new ServiceCollection().AddOptions();
-            var builder1 = services.BuildOptions<FakeOptions>("1");
-            var builder2 = services.BuildOptions<FakeOptions>("2");
+            var services = new ServiceCollection();
+            var builder1 = services.AddOptions<FakeOptions>("1");
+            var builder2 = services.AddOptions<FakeOptions>("2");
             builder1
                 .PostConfigure(options => options.Message += "]")
                 .Configure(options => options.Message += "[")
@@ -48,8 +48,8 @@ namespace Microsoft.Extensions.Options.Tests
         [Fact]
         public void CanMixConfigureCallsOutsideBuilderInOrder()
         {
-            var services = new ServiceCollection().AddOptions();
-            var builder = services.BuildOptions<FakeOptions>("1");
+            var services = new ServiceCollection();
+            var builder = services.AddOptions<FakeOptions>("1");
             
             services.ConfigureAll<FakeOptions>(o => o.Message += "A");
             builder.PostConfigure(o => o.Message += "D");
