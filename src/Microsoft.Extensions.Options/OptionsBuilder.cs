@@ -11,7 +11,7 @@ namespace Microsoft.Extensions.Options
     /// Used to configure TOptions instances.
     /// </summary>
     /// <typeparam name="TOptions">The type of options being requested.</typeparam>
-    public class OptionsConfigurator<TOptions> where TOptions : class
+    public class OptionsBuilder<TOptions> where TOptions : class
     {
         /// <summary>
         /// The default name of the TOptions instance.
@@ -28,7 +28,7 @@ namespace Microsoft.Extensions.Options
         /// </summary>
         /// <param name="services">The <see cref="IServiceCollection"/> for the options being configured.</param>
         /// <param name="name">The default name of the TOptions instance, if null Options.DefaultName is used.</param>
-        public OptionsConfigurator(IServiceCollection services, string name)
+        public OptionsBuilder(IServiceCollection services, string name)
         {
             if (services == null)
             {
@@ -44,7 +44,7 @@ namespace Microsoft.Extensions.Options
         /// Note: These are run before all <seealso cref="PostConfigure(Action{TOptions})"/>.
         /// </summary>
         /// <param name="configureOptions">The action used to configure the options.</param>
-        public virtual OptionsConfigurator<TOptions> Configure(Action<TOptions> configureOptions)
+        public virtual OptionsBuilder<TOptions> Configure(Action<TOptions> configureOptions)
         {
             if (configureOptions == null)
             {
@@ -60,7 +60,7 @@ namespace Microsoft.Extensions.Options
         /// Note: These are run after all <seealso cref="Configure(Action{TOptions})"/>.
         /// </summary>
         /// <param name="configureOptions">The action used to configure the options.</param>
-        public virtual OptionsConfigurator<TOptions> PostConfigure(Action<TOptions> configureOptions)
+        public virtual OptionsBuilder<TOptions> PostConfigure(Action<TOptions> configureOptions)
         {
             if (configureOptions == null)
             {

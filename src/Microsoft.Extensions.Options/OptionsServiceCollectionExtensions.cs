@@ -191,22 +191,22 @@ namespace Microsoft.Extensions.DependencyInjection
         }
 
         /// <summary>
-        /// Gets an options' configurator that forwards Configure calls for the same <typeparamref name="TOptions"/> to the underlying service collection.
+        /// Gets an options builder that forwards Configure calls for the same <typeparamref name="TOptions"/> to the underlying service collection.
         /// </summary>
         /// <typeparam name="TOptions">The options type to be configured.</typeparam>
         /// <param name="services">The <see cref="IServiceCollection"/> to add the services to.</param>
-        /// <returns>The <see cref="OptionsConfigurator{TOptions}"/> so that configure calls can be chained in it.</returns>
-        public static OptionsConfigurator<TOptions> AddOptions<TOptions>(this IServiceCollection services) where TOptions : class
+        /// <returns>The <see cref="OptionsBuilder{TOptions}"/> so that configure calls can be chained in it.</returns>
+        public static OptionsBuilder<TOptions> AddOptions<TOptions>(this IServiceCollection services) where TOptions : class
             => services.AddOptions<TOptions>(Options.Options.DefaultName);
 
         /// <summary>
-        /// Gets an options' configurator that forwards Configure calls for the same named <typeparamref name="TOptions"/> to the underlying service collection.
+        /// Gets an options builder that forwards Configure calls for the same named <typeparamref name="TOptions"/> to the underlying service collection.
         /// </summary>
         /// <typeparam name="TOptions">The options type to be configured.</typeparam>
         /// <param name="services">The <see cref="IServiceCollection"/> to add the services to.</param>
         /// <param name="name">The name of the options instance.</param>
-        /// <returns>The <see cref="OptionsConfigurator{TOptions}"/> so that configure calls can be chained in it.</returns>
-        public static OptionsConfigurator<TOptions> AddOptions<TOptions>(this IServiceCollection services, string name)
+        /// <returns>The <see cref="OptionsBuilder{TOptions}"/> so that configure calls can be chained in it.</returns>
+        public static OptionsBuilder<TOptions> AddOptions<TOptions>(this IServiceCollection services, string name)
             where TOptions : class
         {
             if (services == null)
@@ -216,7 +216,7 @@ namespace Microsoft.Extensions.DependencyInjection
 
             services.AddOptions();
 
-            return new OptionsConfigurator<TOptions>(services, name);
+            return new OptionsBuilder<TOptions>(services, name);
         }
     }
 }
