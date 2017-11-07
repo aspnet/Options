@@ -35,6 +35,15 @@ namespace Microsoft.Extensions.DependencyInjection
             return services;
         }
 
+        public static OptionsBuilder<TOptions> BuildOptions<TOptions>(this IServiceCollection services) where TOptions : class, new()
+            => services.BuildOptions<TOptions>(Options.Options.DefaultName);
+
+        public static OptionsBuilder<TOptions> BuildOptions<TOptions>(this IServiceCollection services, string name) where TOptions : class, new()
+            => new OptionsBuilder<TOptions>(services, name);
+
+        public static OptionsBuilder<TOptions> BuildOptions<TOptions>(this IServiceCollection services, string name, Action<TOptions> configureOptions) where TOptions : class, new()
+            => services.BuildOptions<TOptions>(name).Configure(configureOptions);
+
         /// <summary>
         /// Registers an action used to configure a particular type of options.
         /// Note: These are run before all <seealso cref="PostConfigure{TOptions}(IServiceCollection, Action{TOptions})"/>.

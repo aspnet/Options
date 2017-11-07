@@ -278,8 +278,8 @@ namespace Microsoft.Extensions.Options.Tests
         {
             var someService = new SomeService("Something");
             var services = new ServiceCollection().AddOptions().AddSingleton(someService);
-            services.Configure<FakeOptions, SomeService>((o,s) => o.Message = s.Stuff);
-            services.Configure<FakeOptions, SomeService>("named", (o, s) => o.Message = "named "+s.Stuff);
+            services.BuildOptions<FakeOptions>().Configure<SomeService>((o,s) => o.Message = s.Stuff);
+            services.BuildOptions<FakeOptions>("named").Configure<SomeService>((o, s) => o.Message = "named "+s.Stuff);
 
             var sp = services.BuildServiceProvider();
             var factory = sp.GetRequiredService<IOptionsFactory<FakeOptions>>();
@@ -297,12 +297,57 @@ namespace Microsoft.Extensions.Options.Tests
         public void ConfigureOptionsWithTransientDep()
         {
             var services = new ServiceCollection().AddOptions().AddTransient<SomeCounter>();
-            services.Configure<FakeOptions, SomeCounter, SomeCounter, SomeCounter>("name", (o, s, s2, s3) => o.Message = s.Current + " " + s2.Current + " " + s3.Current);
+            services.BuildOptions<FakeOptions>().Configure(o => o.Message = "none");
+            services.BuildOptions<FakeOptions>("1dep").Configure<SomeCounter>((o, s) => o.Message = s.Current + "");
+            services.BuildOptions<FakeOptions>("2dep").Configure<SomeCounter, SomeCounter>((o, s, s2) => o.Message = s.Current + " " + s2.Current);
+            services.BuildOptions<FakeOptions>("3dep").Configure<SomeCounter, SomeCounter, SomeCounter>((o, s, s2, s3) => o.Message = s.Current + " " + s2.Current + " " + s3.Current);
+            services.BuildOptions<FakeOptions>("4dep").Configure<SomeCounter, SomeCounter, SomeCounter, SomeCounter>((o, s, s2, s3, s4) => o.Message = s.Current + " " + s2.Current + " " + s3.Current + " " + s4.Current);
+            services.BuildOptions<FakeOptions>("5dep").Configure<SomeCounter, SomeCounter, SomeCounter, SomeCounter, SomeCounter>((o, s, s2, s3, s4, s5) => o.Message = s.Current + " " + s2.Current + " " + s3.Current + " " + s4.Current + " " + s5.Current);
 
             var sp = services.BuildServiceProvider();
             var factory = sp.GetRequiredService<IOptionsFactory<FakeOptions>>();
 
-            Assert.Equal("0 1 2", factory.Create("name").Message);
+            Assert.Equal("none", factory.Create(Options.DefaultName).Message);
+            Assert.Equal("0", factory.Create("1dep").Message);
+            Assert.Equal("1 2", factory.Create("2dep").Message);
+            Assert.Equal("3 4 5", factory.Create("3dep").Message);
+            Assert.Equal("6 7 8 9", factory.Create("4dep").Message);
+            Assert.Equal("10 11 12 13 14", factory.Create("5dep").Message);
+
+            // Factory caches configures
+            Assert.Equal("0", factory.Create("1dep").Message);
+
+            // New factory will reexecute
+            Assert.Equal("15", sp.GetRequiredService<IOptionsFactory<FakeOptions>>().Create("1dep").Message);
+        }
+
+        [Fact]
+        public void PostConfigureOptionsWithTransientDep()
+        {
+            var services = new ServiceCollection().AddOptions().AddTransient<SomeCounter>();
+            services.ConfigureAll<FakeOptions>(o => o.Message = "Override");
+            services.BuildOptions<FakeOptions>().PostConfigure(o => o.Message = "none");
+            services.BuildOptions<FakeOptions>("1dep").PostConfigure<SomeCounter>((o, s) => o.Message = s.Current + "");
+            services.BuildOptions<FakeOptions>("2dep").PostConfigure<SomeCounter, SomeCounter>((o, s, s2) => o.Message = s.Current + " " + s2.Current);
+            services.BuildOptions<FakeOptions>("3dep").PostConfigure<SomeCounter, SomeCounter, SomeCounter>((o, s, s2, s3) => o.Message = s.Current + " " + s2.Current + " " + s3.Current);
+            services.BuildOptions<FakeOptions>("4dep").PostConfigure<SomeCounter, SomeCounter, SomeCounter, SomeCounter>((o, s, s2, s3, s4) => o.Message = s.Current + " " + s2.Current + " " + s3.Current + " " + s4.Current);
+            services.BuildOptions<FakeOptions>("5dep").PostConfigure<SomeCounter, SomeCounter, SomeCounter, SomeCounter, SomeCounter>((o, s, s2, s3, s4, s5) => o.Message = s.Current + " " + s2.Current + " " + s3.Current + " " + s4.Current + " " + s5.Current);
+
+            var sp = services.BuildServiceProvider();
+            var factory = sp.GetRequiredService<IOptionsFactory<FakeOptions>>();
+
+            Assert.Equal("none", factory.Create(Options.DefaultName).Message);
+            Assert.Equal("0", factory.Create("1dep").Message);
+            Assert.Equal("1 2", factory.Create("2dep").Message);
+            Assert.Equal("3 4 5", factory.Create("3dep").Message);
+            Assert.Equal("6 7 8 9", factory.Create("4dep").Message);
+            Assert.Equal("10 11 12 13 14", factory.Create("5dep").Message);
+
+            // Factory caches configures
+            Assert.Equal("0", factory.Create("1dep").Message);
+
+            // New factory will reexecute
+            Assert.Equal("15", sp.GetRequiredService<IOptionsFactory<FakeOptions>>().Create("1dep").Message);
         }
 
     }
