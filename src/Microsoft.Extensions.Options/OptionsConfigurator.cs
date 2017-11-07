@@ -1,39 +1,74 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System;
 using System.Collections.Generic;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace Microsoft.Extensions.Options
 {
     /// <summary>
-    /// Represents a builder that configures a named TOptions instance.
+    /// Used to configure TOptions instances.
     /// </summary>
     /// <typeparam name="TOptions">The type of options being requested.</typeparam>
     public class OptionsConfigurator<TOptions> where TOptions : class
     {
-        private readonly IServiceCollection _services;
-        private readonly string _name;
+        /// <summary>
+        /// The default name of the TOptions instance.
+        /// </summary>
+        public string Name { get; }
 
         /// <summary>
-        /// Initializes a new instance with the specified options configurations.
+        /// The <see cref="IServiceCollection"/> for the options being configured.
         /// </summary>
-        /// <param name="services">The <see cref="IServiceCollection"/> to add the services to.</param>
-        /// <param name="name">The name of the options instance being configured.</param>
+        public IServiceCollection Services { get; }
+
+        /// <summary>
+        /// Constructor.
+        /// </summary>
+        /// <param name="services">The <see cref="IServiceCollection"/> for the options being configured.</param>
+        /// <param name="name">The default name of the TOptions instance, if null Options.DefaultName is used.</param>
         public OptionsConfigurator(IServiceCollection services, string name)
         {
-            _services = services;
-            _name = name;
+            if (services == null)
+            {
+                throw new ArgumentNullException(nameof(services));
+            }
+
+            Services = services;
+            Name = name ?? Options.DefaultName;
         }
 
         /// <summary>
-        /// The name of the options instance being configured.
+        /// Registers an action used to configure a particular type of options.
+        /// Note: These are run before all <seealso cref="PostConfigure(Action{TOptions})"/>.
         /// </summary>
-        public string Name => _name;
+        /// <param name="configureOptions">The action used to configure the options.</param>
+        public virtual OptionsConfigurator<TOptions> Configure(Action<TOptions> configureOptions)
+        {
+            if (configureOptions == null)
+            {
+                throw new ArgumentNullException(nameof(configureOptions));
+            }
+
+            Services.AddSingleton<IConfigureOptions<TOptions>>(new ConfigureNamedOptions<TOptions>(Name, configureOptions));
+            return this;
+        }
 
         /// <summary>
-        /// The <see cref="IServiceCollection"/> to add the services to.
+        /// Registers an action used to configure a particular type of options.
+        /// Note: These are run after all <seealso cref="Configure(Action{TOptions})"/>.
         /// </summary>
-        public IServiceCollection Services => _services;
+        /// <param name="configureOptions">The action used to configure the options.</param>
+        public virtual OptionsConfigurator<TOptions> PostConfigure(Action<TOptions> configureOptions)
+        {
+            if (configureOptions == null)
+            {
+                throw new ArgumentNullException(nameof(configureOptions));
+            }
+
+            Services.AddSingleton<IPostConfigureOptions<TOptions>>(new PostConfigureOptions<TOptions>(Name, configureOptions));
+            return this;
+        }
     }
 }
