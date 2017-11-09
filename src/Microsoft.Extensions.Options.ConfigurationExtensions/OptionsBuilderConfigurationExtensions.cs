@@ -19,7 +19,7 @@ namespace Microsoft.Extensions.DependencyInjection
         /// <param name="optionsBuilder">The options builder to add the services to.</param>
         /// <param name="config">The configuration being bound.</param>
         /// <returns>The <see cref="OptionsBuilder{TOptions}"/> so that additional calls can be chained.</returns>
-        public static OptionsBuilder<TOptions> Configure<TOptions>(this OptionsBuilder<TOptions> optionsBuilder, IConfiguration config) where TOptions : class
+        public static OptionsBuilder<TOptions> Bind<TOptions>(this OptionsBuilder<TOptions> optionsBuilder, IConfiguration config) where TOptions : class
         {
             if (optionsBuilder == null)
             {
