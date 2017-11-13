@@ -68,7 +68,7 @@ namespace Microsoft.Extensions.Options.Tests
         {
             var services = new ServiceCollection();
             var builder = services.AddOptions<FakeOptions>("1");
-            
+
             services.ConfigureAll<FakeOptions>(o => o.Message += "A");
             builder.PostConfigure(o => o.Message += "D");
             services.PostConfigure<FakeOptions>("1", o => o.Message += "E");
@@ -185,6 +185,18 @@ namespace Microsoft.Extensions.Options.Tests
 
             // New factory will reexecute
             Assert.Equal("15", sp.GetRequiredService<IOptionsFactory<FakeOptions>>().Create("1dep").Message);
+        }
+
+        [Fact]
+        public void CanConfigureWithServiceProvider()
+        {
+            var someService = new SomeService("Something");
+            var services = new ServiceCollection().AddOptions().AddSingleton(someService);
+            services.AddOptions<FakeOptions>().Configure<IServiceProvider>((o, s) => o.Message = s.GetRequiredService<SomeService>().Stuff);
+
+            var sp = services.BuildServiceProvider();
+            var factory = sp.GetRequiredService<IOptionsFactory<FakeOptions>>();
+            Assert.Equal("Something", factory.Create(Options.DefaultName).Message);
         }
     }
 }
