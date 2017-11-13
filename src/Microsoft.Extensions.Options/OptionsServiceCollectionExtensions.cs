@@ -35,15 +35,6 @@ namespace Microsoft.Extensions.DependencyInjection
             return services;
         }
 
-        public static OptionsBuilder<TOptions> BuildOptions<TOptions>(this IServiceCollection services) where TOptions : class, new()
-            => services.BuildOptions<TOptions>(Options.Options.DefaultName);
-
-        public static OptionsBuilder<TOptions> BuildOptions<TOptions>(this IServiceCollection services, string name) where TOptions : class, new()
-            => new OptionsBuilder<TOptions>(services, name);
-
-        public static OptionsBuilder<TOptions> BuildOptions<TOptions>(this IServiceCollection services, string name, Action<TOptions> configureOptions) where TOptions : class, new()
-            => services.BuildOptions<TOptions>(name).Configure(configureOptions);
-
         /// <summary>
         /// Registers an action used to configure a particular type of options.
         /// Note: These are run before all <seealso cref="PostConfigure{TOptions}(IServiceCollection, Action{TOptions})"/>.
@@ -53,11 +44,6 @@ namespace Microsoft.Extensions.DependencyInjection
         /// <param name="configureOptions">The action used to configure the options.</param>
         /// <returns>The <see cref="IServiceCollection"/> so that additional calls can be chained.</returns>
         public static IServiceCollection Configure<TOptions>(this IServiceCollection services, Action<TOptions> configureOptions) where TOptions : class
-            => services.Configure(Options.Options.DefaultName, configureOptions);
-
-        public static IServiceCollection Configure<TOptions, TDep>(this IServiceCollection services, Action<TOptions, TDep> configureOptions) 
-            where TOptions : class
-            where TDep : class
             => services.Configure(Options.Options.DefaultName, configureOptions);
 
         /// <summary>
@@ -83,66 +69,6 @@ namespace Microsoft.Extensions.DependencyInjection
             }
 
             services.AddSingleton<IConfigureOptions<TOptions>>(new ConfigureNamedOptions<TOptions>(name, configureOptions));
-            return services;
-        }
-
-        public static IServiceCollection Configure<TOptions, TDep>(this IServiceCollection services, string name, Action<TOptions, TDep> configureOptions)
-            where TOptions : class
-            where TDep : class
-        {
-            if (services == null)
-            {
-                throw new ArgumentNullException(nameof(services));
-            }
-
-            if (configureOptions == null)
-            {
-                throw new ArgumentNullException(nameof(configureOptions));
-            }
-
-            services.AddTransient<IConfigureOptions<TOptions>>(sp => 
-                new ConfigureNamedOptions<TOptions, TDep>(name, sp.GetRequiredService<TDep>(), configureOptions));
-            return services;
-        }
-
-        public static IServiceCollection Configure<TOptions, TDep, TDep2>(this IServiceCollection services, string name, Action<TOptions, TDep, TDep2> configureOptions)
-            where TOptions : class
-            where TDep : class
-            where TDep2 : class
-        {
-            if (services == null)
-            {
-                throw new ArgumentNullException(nameof(services));
-            }
-
-            if (configureOptions == null)
-            {
-                throw new ArgumentNullException(nameof(configureOptions));
-            }
-
-            services.AddTransient<IConfigureOptions<TOptions>>(sp =>
-                new ConfigureNamedOptions<TOptions, TDep, TDep2>(name, sp.GetRequiredService<TDep>(), sp.GetRequiredService<TDep2>(), configureOptions));
-            return services;
-        }
-
-        public static IServiceCollection Configure<TOptions, TDep, TDep2, TDep3>(this IServiceCollection services, string name, Action<TOptions, TDep, TDep2, TDep3> configureOptions)
-            where TOptions : class
-            where TDep : class
-            where TDep2 : class
-            where TDep3 : class
-        {
-            if (services == null)
-            {
-                throw new ArgumentNullException(nameof(services));
-            }
-
-            if (configureOptions == null)
-            {
-                throw new ArgumentNullException(nameof(configureOptions));
-            }
-
-            services.AddTransient<IConfigureOptions<TOptions>>(sp =>
-                new ConfigureNamedOptions<TOptions, TDep, TDep2, TDep3>(name, sp.GetRequiredService<TDep>(), sp.GetRequiredService<TDep2>(), sp.GetRequiredService<TDep3>(), configureOptions));
             return services;
         }
 
