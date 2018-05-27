@@ -25,7 +25,7 @@ namespace Microsoft.Extensions.Options
             _postConfigures = postConfigures;
         }
 
-        public TOptions Create(string name)
+        public virtual TOptions Create(string name)
         {
             var options = new TOptions();
             foreach (var setup in _setups)
