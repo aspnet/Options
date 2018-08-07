@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
 using System.Linq;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -475,7 +476,8 @@ namespace Microsoft.Extensions.Options.Tests
                         try
                         {
                             getMethod.Invoke(monitor, new object[] { namedInstance });
-                        } catch (Exception e)
+                        }
+                        catch (Exception e)
                         {
                             if (e.InnerException is OptionsValidationException)
                             {
@@ -513,5 +515,47 @@ namespace Microsoft.Extensions.Options.Tests
             ValidateFailure<ComplexOptions>(error, Options.DefaultName, "A validation error has occured.", "Virtual", "Integer");
         }
 
+        [AttributeUsage(AttributeTargets.Field | AttributeTargets.Property, AllowMultiple = false, Inherited = true)]
+        public class FromAttribute : ValidationAttribute
+        {
+            public string Accepted { get; set; }
+
+            public override bool IsValid(object value)
+                => value == null || value.ToString() == Accepted;
+        }
+
+        private class AnnotatedOptions
+        {
+            [Required]
+            public string Required { get; set; }
+
+            [StringLength(5, ErrorMessage = "Too long.")]
+            public string StringLength { get; set; }
+
+            [Range(-5, 5, ErrorMessage = "Out of range.")]
+            public int IntRange { get; set; }
+
+            [From(Accepted = "USA")]
+            public string Custom { get; set; }
+        }
+
+        [Fact]
+        public void CanValidateDataAnnotations()
+        {
+            var services = new ServiceCollection();
+            services.AddOptions<AnnotatedOptions>()
+                .Configure(o =>
+                {
+                    o.StringLength = "111111";
+                    o.IntRange = 10;
+                    o.Custom = "nowhere";
+                })
+                .ValidateDataAnnotations();
+
+            var sp = services.BuildServiceProvider();
+
+            var error = Assert.Throws<OptionsValidationException>(() => sp.GetRequiredService<IOptions<AnnotatedOptions>>().Value);
+            ValidateFailure<AnnotatedOptions>(error, Options.DefaultName, "The Required field is required. : Too long. : Out of range. : The field Custom is invalid.");
+        }
     }
-} 
+}

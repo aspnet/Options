@@ -257,6 +257,16 @@ namespace Microsoft.Extensions.Options
             return this;
         }
 
+        /// <summary>
+        /// Register this options instance for the built in DataAnnotationsAttribute
+        /// </summary>
+        /// <returns></returns>
+        public virtual OptionsBuilder<TOptions> ValidateDataAnnotations()
+        {
+            Services.AddSingleton<IValidateOptions<TOptions>>(new DataAnnotationValidateOptions<TOptions>(Name));
+            return this;
+        }
+
         public virtual OptionsBuilder<TOptions> Validate(Func<TOptions, bool> validation)
             => Validate(validation: validation, failureMessage: "A validation error has occured.");
 
