@@ -9,7 +9,7 @@ using System.Linq;
 namespace Microsoft.Extensions.Options
 {
     /// <summary>
-    /// Implementation of <see cref="IValidateOptions{TOptions}"/>
+    /// Implementation of <see cref="IValidateOptions{TOptions}"/> that uses DataAnnotation's <see cref="Validator"/> for validation.
     /// </summary>
     /// <typeparam name="TOptions">The instance being validated.</typeparam>
     public class DataAnnotationValidateOptions<TOptions> : IValidateOptions<TOptions> where TOptions : class

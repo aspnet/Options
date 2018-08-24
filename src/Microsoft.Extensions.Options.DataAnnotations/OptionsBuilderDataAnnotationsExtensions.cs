@@ -1,7 +1,6 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using System;
 using Microsoft.Extensions.Options;
 
 namespace Microsoft.Extensions.DependencyInjection
@@ -12,7 +11,7 @@ namespace Microsoft.Extensions.DependencyInjection
     public static class OptionsBuilderDataAnnotationsExtensions
     {
         /// <summary>
-        /// Register this options instance for the built in DataAnnotationsAttribute
+        /// Register this options instance for validation of its DataAnnotations.
         /// </summary>
         /// <typeparam name="TOptions">The options type to be configured.</typeparam>
         /// <param name="optionsBuilder">The options builder to add the services to.</param>
