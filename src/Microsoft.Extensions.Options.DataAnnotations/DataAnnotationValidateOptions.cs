@@ -49,7 +49,10 @@ namespace Microsoft.Extensions.Options
                 }
 
 
-                var errors = String.Join(" : ", validationResults.Select(r => r.ErrorMessage));
+                var errors = String.Join(Environment.NewLine, 
+                    validationResults.Select(r => "DataAnnotation validation failed for members {" + 
+                    String.Join(",", r.MemberNames) + 
+                    "} with error '" + r.ErrorMessage + "'."));
                 return ValidateOptionsResult.Fail(errors);
             }
 

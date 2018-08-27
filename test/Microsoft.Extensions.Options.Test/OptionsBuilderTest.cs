@@ -555,7 +555,39 @@ namespace Microsoft.Extensions.Options.Tests
             var sp = services.BuildServiceProvider();
 
             var error = Assert.Throws<OptionsValidationException>(() => sp.GetRequiredService<IOptions<AnnotatedOptions>>().Value);
-            ValidateFailure<AnnotatedOptions>(error, Options.DefaultName, "The Required field is required. : Too long. : Out of range. : The field Custom is invalid.");
+            ValidateFailure<AnnotatedOptions>(error, Options.DefaultName,
+                @"DataAnnotation validation failed for members {Required} with error 'The Required field is required.'.
+DataAnnotation validation failed for members {StringLength} with error 'Too long.'.
+DataAnnotation validation failed for members {IntRange} with error 'Out of range.'.
+DataAnnotation validation failed for members {Custom} with error 'The field Custom is invalid.'.");
         }
+        
+
+        [Fact]
+        public void CanValidateMixDataAnnotations()
+        {
+            var services = new ServiceCollection();
+            services.AddOptions<AnnotatedOptions>()
+                .Configure(o =>
+                {
+                    o.StringLength = "111111";
+                    o.IntRange = 10;
+                    o.Custom = "nowhere";
+                })
+                .ValidateDataAnnotations()
+                .Validate(o => o.Custom != "nowhere", "I don't want to go to nowhere!");
+
+            var sp = services.BuildServiceProvider();
+
+            var error = Assert.Throws<OptionsValidationException>(() => sp.GetRequiredService<IOptions<AnnotatedOptions>>().Value);
+            ValidateFailure<AnnotatedOptions>(error, Options.DefaultName, 
+                @"DataAnnotation validation failed for members {Required} with error 'The Required field is required.'.
+DataAnnotation validation failed for members {StringLength} with error 'Too long.'.
+DataAnnotation validation failed for members {IntRange} with error 'Out of range.'.
+DataAnnotation validation failed for members {Custom} with error 'The field Custom is invalid.'.",
+                "I don't want to go to nowhere!");
+        }
+
+
     }
 }
