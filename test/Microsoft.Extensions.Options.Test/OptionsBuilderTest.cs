@@ -585,7 +585,7 @@ namespace Microsoft.Extensions.Options.Tests
 DataAnnotation validation failed for members StringLength with the error 'Too long.'.
 DataAnnotation validation failed for members IntRange with the error 'Out of range.'.
 DataAnnotation validation failed for members Custom with the error 'The field Custom is invalid.'.
-DataAnnotation validation failed for members Dep1,Dep2 with the error 'Dep1 != Dep2'.");
+DataAnnotation validation failed for members Dep1, Dep2 with the error 'Dep1 != Dep2'.");
         }
 
         [Fact]
@@ -611,7 +611,7 @@ DataAnnotation validation failed for members Dep1,Dep2 with the error 'Dep1 != D
 DataAnnotation validation failed for members StringLength with the error 'Too long.'.
 DataAnnotation validation failed for members IntRange with the error 'Out of range.'.
 DataAnnotation validation failed for members Custom with the error 'The field Custom is invalid.'.
-DataAnnotation validation failed for members Dep1,Dep2 with the error 'Dep1 != Dep2'.",
+DataAnnotation validation failed for members Dep1, Dep2 with the error 'Dep1 != Dep2'.",
                 "I don't want to go to nowhere!");
         }
 
