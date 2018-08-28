@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.Linq;
+using System.Reflection;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Xunit;
@@ -394,7 +395,7 @@ namespace Microsoft.Extensions.Options.Tests
             {
                 errors = new string[] { "A validation error has occured." };
             }
-            Assert.True(errors.SequenceEqual(e.Failures));
+            Assert.True(errors.SequenceEqual(e.Failures), "Expected: " + String.Join(" - ", e.Failures));
         }
 
         [Fact]
@@ -524,6 +525,25 @@ namespace Microsoft.Extensions.Options.Tests
                 => value == null || value.ToString() == Accepted;
         }
 
+        [AttributeUsage(AttributeTargets.Field | AttributeTargets.Property, AllowMultiple = false, Inherited = true)]
+        public class DepValidator : ValidationAttribute
+        {
+            public string Target { get; set; }
+
+            protected override ValidationResult IsValid(object value, ValidationContext validationContext)
+            {
+                object instance = validationContext.ObjectInstance;
+                Type type = instance.GetType();
+                var dep1 = type.GetProperty("Dep1")?.GetValue(instance);
+                var dep2 = type.GetProperty(Target)?.GetValue(instance);
+                if (dep1 == dep2)
+                {
+                    return ValidationResult.Success;
+                }
+                return new ValidationResult("Dep1 != "+Target, new string[] { "Dep1", Target });
+            }
+        }
+
         private class AnnotatedOptions
         {
             [Required]
@@ -537,6 +557,10 @@ namespace Microsoft.Extensions.Options.Tests
 
             [From(Accepted = "USA")]
             public string Custom { get; set; }
+
+            [DepValidator(Target = "Dep2")]
+            public string Dep1 { get; set; }
+            public string Dep2 { get; set; }
         }
 
         [Fact]
@@ -549,6 +573,7 @@ namespace Microsoft.Extensions.Options.Tests
                     o.StringLength = "111111";
                     o.IntRange = 10;
                     o.Custom = "nowhere";
+                    o.Dep1 = "Not dep2";
                 })
                 .ValidateDataAnnotations();
 
@@ -556,12 +581,12 @@ namespace Microsoft.Extensions.Options.Tests
 
             var error = Assert.Throws<OptionsValidationException>(() => sp.GetRequiredService<IOptions<AnnotatedOptions>>().Value);
             ValidateFailure<AnnotatedOptions>(error, Options.DefaultName,
-                @"DataAnnotation validation failed for members {Required} with error 'The Required field is required.'.
-DataAnnotation validation failed for members {StringLength} with error 'Too long.'.
-DataAnnotation validation failed for members {IntRange} with error 'Out of range.'.
-DataAnnotation validation failed for members {Custom} with error 'The field Custom is invalid.'.");
+                @"DataAnnotation validation failed for members Required with the error 'The Required field is required.'.
+DataAnnotation validation failed for members StringLength with the error 'Too long.'.
+DataAnnotation validation failed for members IntRange with the error 'Out of range.'.
+DataAnnotation validation failed for members Custom with the error 'The field Custom is invalid.'.
+DataAnnotation validation failed for members Dep1,Dep2 with the error 'Dep1 != Dep2'.");
         }
-        
 
         [Fact]
         public void CanValidateMixDataAnnotations()
@@ -573,6 +598,7 @@ DataAnnotation validation failed for members {Custom} with error 'The field Cust
                     o.StringLength = "111111";
                     o.IntRange = 10;
                     o.Custom = "nowhere";
+                    o.Dep1 = "Not dep2";
                 })
                 .ValidateDataAnnotations()
                 .Validate(o => o.Custom != "nowhere", "I don't want to go to nowhere!");
@@ -581,10 +607,11 @@ DataAnnotation validation failed for members {Custom} with error 'The field Cust
 
             var error = Assert.Throws<OptionsValidationException>(() => sp.GetRequiredService<IOptions<AnnotatedOptions>>().Value);
             ValidateFailure<AnnotatedOptions>(error, Options.DefaultName, 
-                @"DataAnnotation validation failed for members {Required} with error 'The Required field is required.'.
-DataAnnotation validation failed for members {StringLength} with error 'Too long.'.
-DataAnnotation validation failed for members {IntRange} with error 'Out of range.'.
-DataAnnotation validation failed for members {Custom} with error 'The field Custom is invalid.'.",
+                @"DataAnnotation validation failed for members Required with the error 'The Required field is required.'.
+DataAnnotation validation failed for members StringLength with the error 'Too long.'.
+DataAnnotation validation failed for members IntRange with the error 'Out of range.'.
+DataAnnotation validation failed for members Custom with the error 'The field Custom is invalid.'.
+DataAnnotation validation failed for members Dep1,Dep2 with the error 'Dep1 != Dep2'.",
                 "I don't want to go to nowhere!");
         }
 

@@ -40,20 +40,18 @@ namespace Microsoft.Extensions.Options
             if (Name == null || name == Name)
             {
                 var validationResults = new List<ValidationResult>();
-                var vc = new ValidationContext(options, serviceProvider: null, items: null);
-                var isValid = Validator.TryValidateObject(options, vc, validationResults, validateAllProperties: true);
-
-                if (isValid)
+                if (Validator.TryValidateObject(options,
+                    new ValidationContext(options, serviceProvider: null, items: null), 
+                    validationResults, 
+                    validateAllProperties: true))
                 {
                     return ValidateOptionsResult.Success;
                 }
 
-
-                var errors = String.Join(Environment.NewLine, 
-                    validationResults.Select(r => "DataAnnotation validation failed for members {" + 
-                    String.Join(",", r.MemberNames) + 
-                    "} with error '" + r.ErrorMessage + "'."));
-                return ValidateOptionsResult.Fail(errors);
+                return ValidateOptionsResult.Fail(String.Join(Environment.NewLine,
+                    validationResults.Select(r => "DataAnnotation validation failed for members " +
+                        String.Join(",", r.MemberNames) +
+                        " with the error '" + r.ErrorMessage + "'.")));
             }
 
             // Ignored if not validating this instance.
