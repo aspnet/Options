@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Collections.Generic;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace Microsoft.Extensions.Options
@@ -369,6 +370,18 @@ namespace Microsoft.Extensions.Options
             }
 
             Services.AddSingleton<IValidateOptions<TOptions>>(new ValidateOptions<TOptions>(Name, validation, failureMessage));
+            return this;
+        }
+
+        /// <summary>
+        /// Registers this options instance for validation by the validator.
+        /// </summary>
+        /// <returns>The current OptionsBuilder.</returns>
+        public virtual OptionsBuilder<TOptions> ValidatorEnabled()
+        {
+            var builder = Services.AddOptions<OptionsValidatorOptions>()
+                .Configure<IOptionsMonitor<TOptions>>(
+                    (options,monitor) => options.Actions.Add(() => monitor.Get(Name)));
             return this;
         }
     }

@@ -427,69 +427,6 @@ namespace Microsoft.Extensions.Options.Tests
             Assert.Equal("target", op.Virtual);
         }
 
-        // Prototype of startup validation
-
-        public interface IStartupValidator
-        {
-            void Validate();
-        }
-
-        public class StartupValidationOptions
-        {
-            private Dictionary<Type, IList<string>> _targets = new Dictionary<Type, IList<string>>();
-
-            public IDictionary<Type, IList<string>> ValidationTargets { get => _targets; }
-
-            public void Validate<TOptions>(string name) where TOptions : class
-            {
-                if (!_targets.ContainsKey(typeof(TOptions)))
-                {
-                    _targets[typeof(TOptions)] = new List<string>();
-                }
-                _targets[typeof(TOptions)].Add(name ?? Options.DefaultName);
-            }
-
-            public void Validate<TOptions>() where TOptions : class => Validate<TOptions>(Options.DefaultName);
-        }
-
-        public class OptionsStartupValidator : IStartupValidator
-        {
-            private IServiceProvider _services;
-            private StartupValidationOptions _options;
-
-            public OptionsStartupValidator(IOptions<StartupValidationOptions> options, IServiceProvider services)
-            {
-                _services = services;
-                _options = options.Value;
-            }
-
-            public void Validate()
-            {
-                var errors = new List<string>();
-                foreach (var targetType in _options.ValidationTargets.Keys)
-                {
-                    var optionsType = typeof(IOptionsMonitor<>).MakeGenericType(targetType);
-                    var monitor = _services.GetRequiredService(optionsType);
-                    var getMethod = optionsType.GetMethod("Get");
-                    foreach (var namedInstance in _options.ValidationTargets[targetType])
-                    {
-                        // TODO: maybe aggregate and catch all options instead of one at a time?
-                        try
-                        {
-                            getMethod.Invoke(monitor, new object[] { namedInstance });
-                        }
-                        catch (Exception e)
-                        {
-                            if (e.InnerException is OptionsValidationException)
-                            {
-                                throw e.InnerException;
-                            }
-                        }
-                    }
-                }
-            }
-        }
-
         [Fact]
         public void CanValidateOptionsEagerly()
         {
@@ -503,17 +440,47 @@ namespace Microsoft.Extensions.Options.Tests
                 })
                 .Validate(o => o.Boolean)
                 .Validate(o => o.Virtual == null, "Virtual")
-                .Validate(o => o.Integer > 12, "Integer");
+                .Validate(o => o.Integer > 12, "Integer")
+                .ValidatorEnabled();
 
-            services.Configure<StartupValidationOptions>(o => o.Validate<ComplexOptions>());
-            services.AddSingleton<IStartupValidator, OptionsStartupValidator>();
+            var sp = services.BuildServiceProvider();
+            var startupValidator = sp.GetRequiredService<IOptionsValidator>();
+            var error = Assert.Throws<OptionsValidatorException>(() => startupValidator.Validate());
+            ValidateFailure<ComplexOptions>(error.ValidatorExceptions.Single(), Options.DefaultName, "A validation error has occured.", "Virtual", "Integer");
+        }
+
+        [Fact]
+        public void CanValidateMultipleOptionsEagerly()
+        {
+            var services = new ServiceCollection();
+            services.AddOptions<ComplexOptions>("bool")
+                .Configure(o =>
+                {
+                    o.Boolean = false;
+                })
+                .Validate(o => o.Boolean)
+                .ValidatorEnabled();
+            services.AddOptions<ComplexOptions>("int")
+                .Configure(o =>
+                {
+                    o.Integer = 11;
+                })
+                .Validate(o => o.Integer != 11, "Not 11.")
+                .ValidatorEnabled();
+            services.AddOptions<ComplexOptions>("good")
+                .ValidatorEnabled();
+            services.AddOptions<ComplexOptions>()
+                .ValidatorEnabled();
 
             var sp = services.BuildServiceProvider();
 
-            var startupValidator = sp.GetRequiredService<IStartupValidator>();
+            var startupValidator = sp.GetRequiredService<IOptionsValidator>();
 
-            var error = Assert.Throws<OptionsValidationException>(() => startupValidator.Validate());
-            ValidateFailure<ComplexOptions>(error, Options.DefaultName, "A validation error has occured.", "Virtual", "Integer");
+            var error = Assert.Throws<OptionsValidatorException>(() => startupValidator.Validate());
+            var failures = error.ValidatorExceptions.ToArray();
+            Assert.Equal(2, failures.Length);
+            ValidateFailure<ComplexOptions>(failures[0], "bool", "A validation error has occured.");
+            ValidateFailure<ComplexOptions>(failures[1], "int", "Not 11.");
         }
 
         [AttributeUsage(AttributeTargets.Field | AttributeTargets.Property, AllowMultiple = false, Inherited = true)]
