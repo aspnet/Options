@@ -32,7 +32,6 @@ namespace Microsoft.Extensions.DependencyInjection
             services.TryAdd(ServiceDescriptor.Singleton(typeof(IOptionsMonitor<>), typeof(OptionsMonitor<>)));
             services.TryAdd(ServiceDescriptor.Transient(typeof(IOptionsFactory<>), typeof(OptionsFactory<>)));
             services.TryAdd(ServiceDescriptor.Singleton(typeof(IOptionsMonitorCache<>), typeof(OptionsCache<>)));
-            services.TryAddSingleton<IOptionsValidator, OptionsValidator>();
             return services;
         }
 

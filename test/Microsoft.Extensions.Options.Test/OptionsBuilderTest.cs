@@ -387,7 +387,7 @@ namespace Microsoft.Extensions.Options.Tests
             }
         }
 
-        private void ValidateFailure<TOptions>(OptionsValidationException e, string name = "", params string[] errors)
+        internal static void ValidateFailure<TOptions>(OptionsValidationException e, string name = "", params string[] errors)
         {
             Assert.Equal(typeof(TOptions), e.OptionsType);
             Assert.Equal(name, e.OptionsName);
@@ -425,62 +425,6 @@ namespace Microsoft.Extensions.Options.Tests
 
             var op = sp.GetRequiredService<IOptionsMonitor<ComplexOptions>>().Get("yes");
             Assert.Equal("target", op.Virtual);
-        }
-
-        [Fact]
-        public void CanValidateOptionsEagerly()
-        {
-            var services = new ServiceCollection();
-            services.AddOptions<ComplexOptions>()
-                .Configure(o =>
-                {
-                    o.Boolean = false;
-                    o.Integer = 11;
-                    o.Virtual = "wut";
-                })
-                .Validate(o => o.Boolean)
-                .Validate(o => o.Virtual == null, "Virtual")
-                .Validate(o => o.Integer > 12, "Integer")
-                .ValidatorEnabled();
-
-            var sp = services.BuildServiceProvider();
-            var startupValidator = sp.GetRequiredService<IOptionsValidator>();
-            var error = Assert.Throws<OptionsValidatorException>(() => startupValidator.Validate());
-            ValidateFailure<ComplexOptions>(error.ValidatorExceptions.Single(), Options.DefaultName, "A validation error has occured.", "Virtual", "Integer");
-        }
-
-        [Fact]
-        public void CanValidateMultipleOptionsEagerly()
-        {
-            var services = new ServiceCollection();
-            services.AddOptions<ComplexOptions>("bool")
-                .Configure(o =>
-                {
-                    o.Boolean = false;
-                })
-                .Validate(o => o.Boolean)
-                .ValidatorEnabled();
-            services.AddOptions<ComplexOptions>("int")
-                .Configure(o =>
-                {
-                    o.Integer = 11;
-                })
-                .Validate(o => o.Integer != 11, "Not 11.")
-                .ValidatorEnabled();
-            services.AddOptions<ComplexOptions>("good")
-                .ValidatorEnabled();
-            services.AddOptions<ComplexOptions>()
-                .ValidatorEnabled();
-
-            var sp = services.BuildServiceProvider();
-
-            var startupValidator = sp.GetRequiredService<IOptionsValidator>();
-
-            var error = Assert.Throws<OptionsValidatorException>(() => startupValidator.Validate());
-            var failures = error.ValidatorExceptions.ToArray();
-            Assert.Equal(2, failures.Length);
-            ValidateFailure<ComplexOptions>(failures[0], "bool", "A validation error has occured.");
-            ValidateFailure<ComplexOptions>(failures[1], "int", "Not 11.");
         }
 
         [AttributeUsage(AttributeTargets.Field | AttributeTargets.Property, AllowMultiple = false, Inherited = true)]

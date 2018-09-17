@@ -24,5 +24,7 @@ namespace Microsoft.Extensions.Options
         /// The errors from the <see cref="IOptionsValidator"/>.
         /// </summary>
         public IEnumerable<OptionsValidationException> ValidatorExceptions { get; }
+
+        // make sure error is displayed on startup
     }
 }

@@ -1,10 +1,26 @@
 ﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using Microsoft.Extensions.DependencyInjection;
 using System.Collections.Generic;
 
 namespace Microsoft.Extensions.Options
 {
+    public static class ValidatorOptionsBuilderExtensions
+    {
+        /// <summary>
+        /// Registers this options instance for validation by the validator.
+        /// </summary>
+        /// <returns>The current OptionsBuilder.</returns>
+        public static OptionsBuilder<TOptions> ValidatorEnabled<TOptions>(this OptionsBuilder<TOptions> builder) where TOptions : class
+        {
+            builder.Services.AddOptions<OptionsValidatorOptions>()
+                .Configure<IOptionsMonitor<TOptions>>(
+                    (options, monitor) => options.Actions.Add(() => monitor.Get(builder.Name)));
+            return builder;
+        }
+    }
+
     /// <summary>
     /// Validates options on by invoking <see cref="OptionsValidatorOptions.Actions"/>.
     /// </summary>

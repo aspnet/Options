@@ -372,17 +372,5 @@ namespace Microsoft.Extensions.Options
             Services.AddSingleton<IValidateOptions<TOptions>>(new ValidateOptions<TOptions>(Name, validation, failureMessage));
             return this;
         }
-
-        /// <summary>
-        /// Registers this options instance for validation by the validator.
-        /// </summary>
-        /// <returns>The current OptionsBuilder.</returns>
-        public virtual OptionsBuilder<TOptions> ValidatorEnabled()
-        {
-            var builder = Services.AddOptions<OptionsValidatorOptions>()
-                .Configure<IOptionsMonitor<TOptions>>(
-                    (options,monitor) => options.Actions.Add(() => monitor.Get(Name)));
-            return this;
-        }
     }
 }
