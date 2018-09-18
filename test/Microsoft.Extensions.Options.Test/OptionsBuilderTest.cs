@@ -395,7 +395,7 @@ namespace Microsoft.Extensions.Options.Tests
             {
                 errors = new string[] { "A validation error has occured." };
             }
-            Assert.True(errors.SequenceEqual(e.Failures), "Expected: " + String.Join(" - ", e.Failures));
+            Assert.True(errors.SequenceEqual(e.Failures), "Got: " + String.Join(" - ", e.Failures) + " Expected: " + String.Join(" - ", e.Failures));
         }
 
         [Fact]
