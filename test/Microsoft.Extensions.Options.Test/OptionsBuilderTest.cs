@@ -399,16 +399,7 @@ namespace Microsoft.Extensions.Options.Tests
             // Check for the error in any of the failures
             foreach (var error in errorsToMatch)
             {
-                var found = false;
-                foreach (var failure in e.Failures)
-                {
-                    found = failure.Contains(error);
-                    if (found)
-                    {
-                        break;
-                    }
-                }
-                Assert.True(found, "Did not find: " + error);
+                Assert.True(e.Failures.FirstOrDefault(f => f.Contains(error)) != null, "Did not find: "+error);
             }
         }
 
